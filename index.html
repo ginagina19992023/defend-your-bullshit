@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f3efe6"><meta name="description" content="DEFEND YOUR BULLSHIT — 学术废话答辩模拟器。项目可以很简单，理论绝不可以。">
+<meta property="og:title" content="DEFEND YOUR BULLSHIT — Final Review Simulator"><meta property="og:description" content="做一个无用的项目。解释它的存在意义。熬过三轮教授质疑。"><meta property="og:type" content="website">
+<title>DEFEND YOUR BULLSHIT</title><link rel="stylesheet" href="./style.css"></head>
+<body><main class="paper"><header><span>DEPARTMENT OF UNNECESSARY EXPLANATIONS</span><span class="red">FINAL REVIEW / 2026</span></header>
+<h1>DEFEND YOUR <span>BULLSHIT.</span></h1><p class="hand">Your concept is weak. Defend it harder. ↗</p>
+<section id="setup">
+<p>一个荒谬项目。三轮教授质疑。你唯一的武器是学术语言。你能让毫无必要的决定显得不可避免吗？</p>
+<div class="grid">
+<div class="card"><label>01 / DISCIPLINE PACK</label><select id="pack"></select><p class="sub">专业内容包可扩展，未来让不同专业学生投稿。</p>
+<label>02 / YOUR ACTUAL PROJECT</label><textarea id="project" placeholder="例如：把三块石头堆起来"></textarea>
+<button id="random" class="outline">↻ 随机抽一个荒谬项目</button></div>
+<div class="card"><label>03 / THEORETICAL INTENSITY</label><select id="intensity"><option value="1">正常 Studio Review</option><option value="2" selected>Final Review · 概念过载</option><option value="3">Biennale Manifesto · 终极玄学</option></select>
+<label>04 / YOUR REVIEW PANEL</label><p>三名虚构教授：现象学、形式主义、批判理论。每位教授各出一道题。</p>
+<p class="sub">纯虚构、纯讽刺，不对应真实教授或机构。</p></div>
+</div>
+<div class="actions"><button id="generate">GENERATE STATEMENT ↗</button></div></section>
+<section id="statement" hidden><p class="eyebrow">THE CONCEPTUAL STATEMENT / 001</p><h2>从操作到存在，全部靠你解释。</h2><article class="letter" id="generated"></article><div class="actions"><button id="regenerate" class="outline">↻ 换一套学术话术</button><button id="copyStatement" class="outline">复制文案</button><button id="beginReview">SUBMIT TO CRITICS →</button></div></section>
+<section id="defense" hidden><div class="topline"><span id="roundLabel">ROUND 1 / 3</span><span id="professorLabel"></span></div>
+<h2>THE PROFESSOR HAS A QUESTION.</h2><blockquote id="question"></blockquote>
+<p class="hand smallhand">But is it architecture?</p>
+<label>CHOOSE A DEFENSE STRATEGY</label><div id="strategies"></div>
+<label>OR TYPE YOUR OWN DEFENSE</label><textarea id="customAnswer" placeholder="你的回答应当针对教授的问题，也可以拿出材料、方法或实验结果……"></textarea>
+<p class="sub">手动回答会按内容判定；策略选项有稳定但不完全相同的收益。只堆砌黑话并不一定高分。</p>
+<div class="actions"><button id="submitDefense">DEFEND YOUR PROJECT →</button></div>
+<div id="feedbackBlock" hidden><div class="letter"><p class="eyebrow">CRITIQUE FEEDBACK</p><p id="feedback"></p><div id="scoreChange" class="scores"></div></div><div class="actions"><button id="nextRound">NEXT →</button></div></div></section>
+<section id="final" hidden><p class="stamp">OFFICIALLY UNRESOLVED</p><h2 id="rank"></h2><p id="ending"></p><div class="card"><div class="scoreline"><span>CONCEPTUAL DEPTH</span><strong id="scoreDepth"></strong></div><div class="scoreline"><span>ACADEMIC CONFIDENCE</span><strong id="scoreConfidence"></strong></div><div class="scoreline"><span>ACTUAL SUBSTANCE</span><strong id="scoreSubstance"></strong></div><div class="scoreline"><span>CRITIQUE SURVIVAL</span><strong id="scoreSurvival"></strong></div></div><div class="actions"><button id="copyResult">COPY FINAL REPORT</button><button class="outline" id="restart">RETAKE STUDIO ↻</button></div></section>
+<footer>YOUR CRITIQUE IS NOT AN ANSWER. YOUR ANSWER IS NOT THE QUESTION. <s>MEANING</s> ©</footer>
+<div class="redaction r1"></div><div class="redaction r2"></div><div class="crumb">⌁</div></main>
+<script src="./packs.js"></script><script src="./game.js"></script></body></html>
