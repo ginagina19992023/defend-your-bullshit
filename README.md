@@ -58,3 +58,5 @@ Open the live public URL in WeChat and use **Share → Moments**. The page conta
 ## License
 
 This repository is an experimental satire prototype.
+
+<!-- Trigger Pages branch deployment after initial Pages activation. -->
