@@ -20,12 +20,11 @@
     question: null,
     professor: null,
     panel: [],
+    criticPool: [],
+    seatEvents: [],
     history: [],
     final: null,
-    customCritics: [],
-    slots: {},
-    slotChaos: 0,
-    professorLeft: false
+    customCritics: []
   };
 
   const professorPool = [
@@ -123,14 +122,6 @@
     ]
   };
 
-  const stitchParts = {
-    openings: ["这并不是一个物体", "我真正想处理的不是功能", "这个形式的脆弱性", "如果我们暂时拒绝效率", "这里的失败"],
-    verbs: ["暴露了", "延迟了", "重新组织了", "迫使我们面对", "把问题转译为"],
-    concepts: ["观看者的身体协商", "公共性的临时边界", "材料自身的沉默", "被制度化的等待", "空间意义的生产条件"],
-    endings: ["因此它必须保持未完成。", "这也是我选择不解决它的原因。", "所以证据不是结果，而是过程。", "它需要以不舒服的方式存在。", "否则它就只剩下一个设计。"]
-  };
-  let currentTokens = [];
-
   function show(id) {
     for (const x of ["setup", "statement", "defense", "final"]) $(x).hidden = x !== id;
     window.scrollTo?.(0, 0);
@@ -166,7 +157,10 @@
       preference: c.preference || { depth: 1, confidence: 1, substance: 0, discomfort: 1 },
       imported: true
     }));
-    state.panel = shuffle(base.concat(professorPool, custom)).slice(0, 3);
+    critics.reset();
+    state.criticPool = base.concat(professorPool, custom);
+    state.seatEvents = [];
+    state.panel = shuffle(state.criticPool).slice(0, 3).map(critics.cast);
   }
 
   function updateChoice() {
@@ -234,16 +228,6 @@
     if (style === "jargon") depth += 1;
     if (style === "erase") confidence += 1;
     if (!a.onTopic && a.evidence === 0) substance -= 1;
-    if (state.slotChaos >= 4) {
-      discomfort += Math.min(4, Math.floor(state.slotChaos / 2));
-      confidence += 1;
-    }
-    if (state.professorLeft) {
-      discomfort += 4;
-      confidence += 2;
-      substance -= 1;
-    }
-
     const lucky = Math.random() < 0.38;
     if (lucky) {
       depth += 1;
@@ -269,8 +253,6 @@
     if (tooHonest) reasons.push("诚实程度危险");
     if (eraseDesign) reasons.push("触发删除设计逻辑");
     if (lucky) reasons.push(random(absurdReasons));
-    if (state.slotChaos >= 4) reasons.push("临场词汇拼装让教授面部表情出现了可见偏移");
-    if (state.professorLeft) reasons.push("教授短暂离席，委员会将其记录为强烈空间反应");
 
     return {
       depth: clamp(depth, 0, 9),
@@ -316,116 +298,21 @@
     }
   }
 
-  function populateWordBank() {
-    const bank = $("wordBank");
-    bank.replaceChildren();
-    currentTokens = [
-      ...shuffle(stitchParts.openings).slice(0, 3).map(text => ({ text, type: "opening" })),
-      ...shuffle(stitchParts.verbs).slice(0, 3).map(text => ({ text, type: "move" })),
-      ...shuffle(stitchParts.concepts).slice(0, 4).map(text => ({ text, type: "concept" })),
-      ...shuffle(stitchParts.endings).slice(0, 3).map(text => ({ text, type: "proof" })),
-      { text: "我把长椅放到了屋顶上", type: "absurd", absurd: true },
-      { text: "这让我想起某次失败的终评", type: "absurd", absurd: true },
-      { text: "我们记录了三位使用者的停留时间", type: "proof" }
-    ];
-    currentTokens.forEach((token, index) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "chip";
-      btn.textContent = token.text;
-      btn.draggable = true;
-      btn.dataset.tokenIndex = String(index);
-      btn.addEventListener("dragstart", event => {
-        event.dataTransfer.setData("text/plain", String(index));
-      });
-      btn.addEventListener("click", () => {
-        appendAnswer(token.text);
-        microReact(token.absurd ? "absurd" : "append", token.text);
-      });
-      bank.append(btn);
-    });
-  }
-
-  function resetSlots() {
-    state.slots = {};
-    state.slotChaos = 0;
-    state.professorLeft = false;
-    $("chaosMeter").textContent = "CHAOS 0";
-    $("improvStatus").textContent = "教授正在观察你的临场拼装。";
-    $("professorFace").classList.remove("flinch", "leave");
-    document.querySelectorAll(".slot").forEach(slot => {
-      slot.className = "slot";
-      slot.innerHTML = "<span>" + slot.dataset.slot.toUpperCase() + "</span><strong>" + defaultSlotText(slot.dataset.slot) + "</strong>";
-      slot.ondragover = event => event.preventDefault();
-      slot.ondrop = event => {
-        event.preventDefault();
-        const token = currentTokens[Number(event.dataTransfer.getData("text/plain"))];
-        if (token) placeToken(slot, token);
-      };
-    });
-  }
-
-  function defaultSlotText(slot) {
-    return { opening: "拖一个开场", move: "拖一个动作", concept: "拖一个概念", proof: "拖证据或离谱理由" }[slot] || "拖一个词";
-  }
-
-  function placeToken(slotEl, token) {
-    const slot = slotEl.dataset.slot;
-    const compatible = token.type === slot || (slot === "proof" && (token.type === "proof" || token.type === "absurd"));
-    const absurd = Boolean(token.absurd);
-    state.slots[slot] = token.text;
-    slotEl.className = "slot filled " + (absurd ? "absurd" : compatible ? "good" : "wrong");
-    slotEl.innerHTML = "<span>" + slot.toUpperCase() + "</span><strong>" + token.text + "</strong>";
-    if (absurd) state.slotChaos += 4;
-    else if (!compatible) state.slotChaos += 2;
-    else state.slotChaos = Math.max(0, state.slotChaos - 1);
-    updateSlotAnswer();
-    microReact(absurd ? "absurd" : compatible ? "good" : "wrong", token.text);
-  }
-
-  function updateSlotAnswer() {
-    const sentence = ["opening", "move", "concept", "proof"].map(key => state.slots[key]).filter(Boolean).join(" ");
-    if (sentence) $("customAnswer").value = sentence;
-  }
-
-  function microReact(kind, text) {
-    const face = $("professorFace");
-    face.classList.remove("flinch", "leave");
-    void face.offsetWidth;
-    if (kind === "good") {
-      $("improvStatus").textContent = "教授的眉毛微微上扬：这个词放得像是有预谋。";
-    } else if (kind === "wrong") {
-      $("improvStatus").textContent = "教授眯起眼睛：这个词的位置不对，但也许可以被解释。";
-      face.classList.add("flinch");
-    } else if (kind === "absurd") {
-      $("improvStatus").textContent = "教授明显停顿了一下：" + text + " 造成了评图事故的前兆。";
-      face.classList.add("flinch");
-    } else {
-      $("improvStatus").textContent = "教授听见了一个词，但还没有决定要不要生气。";
-    }
-    if (state.slotChaos >= 7) {
-      state.professorLeft = true;
-      $("improvStatus").textContent = "教授离席去倒水。委员会把这称为一次强烈的空间反应。";
-      face.classList.add("leave");
-    }
-    $("chaosMeter").textContent = "CHAOS " + state.slotChaos;
-  }
-
-  function appendAnswer(text) {
-    const box = $("customAnswer");
-    box.value = (box.value.trim() ? box.value.trim() + " " : "") + text;
-    box.focus();
-  }
-
-  function stitchedSentence() {
-    return [random(stitchParts.openings), random(stitchParts.verbs), random(stitchParts.concepts), random(stitchParts.endings)].join(" ");
-  }
-
   function critique() {
-    state.professor = state.panel[state.round];
+    const scheduled = state.panel[state.round];
+    const event = critics.replace(state.round, state.scores, scheduled, state.criticPool);
+    state.professor = event ? event.incoming : scheduled;
+    state.panel[state.round] = state.professor;
+    $("seatEvent").hidden = !event;
+    if (event) {
+      state.seatEvents.push({ round: state.round + 1, ...event });
+      $("seatEventTitle").textContent = event.title;
+      $("seatEventText").textContent = event.message + " 新评委的偏好和提问已生效，本轮次数与已有分数保留。";
+    }
     state.question = { text: state.professor.question, topic: state.professor.topic };
     $("roundLabel").textContent = "ROUND " + (state.round + 1) + " / 3";
     $("professorLabel").textContent = state.professor.name;
+    $("criticRole").textContent = state.professor.role;
     $("question").textContent = state.question.text;
     $("strategies").replaceChildren();
     pack().strategies.forEach((s, i) => {
@@ -447,8 +334,6 @@
     updateChoice();
     updateMood();
     passStatus();
-    populateWordBank();
-    resetSlots();
     $("customAnswer").value = "";
     $("feedbackBlock").hidden = true;
     $("submitDefense").disabled = false;
@@ -519,16 +404,41 @@
     $("submitDefense").textContent = "PROFESSOR IS THINKING...";
     const mainTag = grading.tags[0];
     const localResponse = random(contradictionPool[mainTag]);
-    const aiResponse = await optionalAiFeedback(answer, grading);
+    const trigger = battle.pickTrigger(state.scores, grading);
+    const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
     const response = aiResponse || localResponse;
-    const accident = state.professorLeft ? "\n\nINCIDENT REPORT: 教授曾短暂离席，但没有人敢确认这是否算失败。" : "";
-    $("feedback").textContent = response + accident + "\n\n" + grading.reason + "\n\nYOUR DEFENSE: " + answer;
+    $("submitDefense").textContent = trigger ? "已进入现实 BATTLE" : "答辩已提交";
+    $("feedback").textContent = response + "\n\n" + grading.reason + "\n\nYOUR DEFENSE: " + answer;
     $("scoreChange").textContent = "DEPTH +" + grading.depth + "  CONFIDENCE +" + grading.confidence + "  SUBSTANCE " + (grading.substance >= 0 ? "+" : "") + grading.substance + "  DISCOMFORT +" + grading.discomfort + (aiResponse ? "  AI VARIATION ON" : "  LOCAL RULES");
     state.history.push({ professor: state.professor.name, question: state.question.text, answer, grading, response, ai: Boolean(aiResponse) });
     $("feedbackBlock").hidden = false;
     $("nextRound").textContent = state.round === 2 ? "FINAL VERDICT" : "NEXT CRITIQUE";
     updateMood();
     passStatus();
+    $("nextRound").disabled = Boolean(trigger);
+    if (trigger) {
+      battle.open(trigger, state.professor.name, state.project, answer => {
+        const grading = evaluate(answer, state.question, "manual");
+        return {
+          scores: {
+            depth: Math.min(3, Math.floor(grading.depth / 2)),
+            confidence: Math.min(3, Math.floor(grading.confidence / 2)),
+            substance: clamp(grading.substance, -1, 3),
+            discomfort: Math.min(3, Math.floor(grading.discomfort / 2))
+          },
+          reason: grading.reason
+        };
+      }, result => {
+        for (const key of Object.keys(state.scores)) {
+          state.scores[key] += result.scores[key];
+          if (key !== "substance") state.scores[key] = Math.max(0, state.scores[key]);
+        }
+        state.history[state.history.length - 1].battle = result;
+        updateMood();
+        passStatus();
+        $("nextRound").disabled = false;
+      });
+    }
   }
 
   function verdict() {
@@ -787,6 +697,9 @@
     reader.readAsText(file);
   }
 
+  const battle = window.DYB_BATTLE.create();
+  const critics = window.DYB_CRITICS.create();
+
   $("random").addEventListener("click", () => {
     $("project").value = random(pack().projects);
   });
@@ -798,6 +711,7 @@
   $("regenerate").addEventListener("click", statement);
   $("copyStatement").addEventListener("click", () => copy(state.statement));
   $("beginReview").addEventListener("click", () => {
+    battle.reset();
     state.round = 0;
     state.history = [];
     state.scores = { depth: 0, confidence: 0, substance: 0, discomfort: 0 };
@@ -807,12 +721,13 @@
   });
   $("submitDefense").addEventListener("click", submit);
   $("nextRound").addEventListener("click", () => {
+    if (battle.isPending()) return;
+    battle.hide();
     state.round += 1;
     if (state.round >= 3) finish();
     else critique();
   });
   $("restart").addEventListener("click", () => show("setup"));
-  $("stitchSentence").addEventListener("click", () => appendAnswer(stitchedSentence()));
   $("criticPackFile").addEventListener("change", event => {
     const file = event.target.files?.[0];
     if (file) loadCriticPack(file);
@@ -832,3 +747,4 @@
   addSelects();
   $("random").click();
 })();
+

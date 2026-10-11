@@ -36,8 +36,21 @@
               <li>生成概念陈述，然后进入三轮答辩。</li>
               <li>每轮选择策略，或写自己的回答。自由输入会被本地规则检测关键词、证据、概念堆叠和回避程度。</li>
               <li>通关需要：Conceptual Depth >= 8，Academic Confidence >= 8，Actual Substance >= 4，并且 Committee Discomfort 保持在 4-15。</li>
+              <li>不适值首次达到 10 会触发现实 Battle；概念受到欣赏或随机追问也可能触发。限时拼贴单词会改变评分，可以暂停计时。</li>
               <li>太实证会让委员会不安；太概念会显得空；太诚实会被误读成激进反思；删掉设计有时反而会被夸。</li>
             </ol>
+          </details>
+
+          <details class="event-rules">
+            <summary>随机事件 / 什么时候会发生？</summary>
+            <ul>
+              <li>不适值首次达到 10：必定触发限时磁条 Battle。</li>
+              <li>本轮概念得分达到 6：35% 概率触发欣赏型 Battle；否则还有 12% 概率突发 Battle。</li>
+              <li>第 2、3 轮：12% 概率评委去开会；第 3 轮另有 15% 概率评委下班。</li>
+              <li>每轮：8% 概率空降 visiting critic；累计概念深度达到 8 时升为 18%。每轮最多换席一次。</li>
+              <li>Battle 中 CHAOS 达到 7：教授暂时离席倒水，倒计时继续。</li>
+            </ul>
+            <p class="sub">评委名字由建筑大师名字拼贴并故意错拼，都是虚构角色。换席保留已有分数，新评委会带来新的偏好和问题。</p>
           </details>
 
           <div class="field-grid">
@@ -105,6 +118,7 @@
         <aside class="professor-card" aria-live="polite">
           <div id="professorFace" class="professor-face">:-|</div>
           <strong id="moodLabel">mild concern</strong>
+          <p id="criticRole" class="critic-role"></p>
           <p id="biasLabel" class="bias-label">BIAS: undecided</p>
           <p id="moodNote">委员会仍在试图相信你。</p>
         </aside>
@@ -118,33 +132,57 @@
         </div>
       </div>
 
+      <div id="seatEvent" class="seat-event" hidden role="status" aria-live="polite">
+        <strong id="seatEventTitle"></strong>
+        <p id="seatEventText"></p>
+      </div>
+
       <label>CHOOSE A DEFENSE STRATEGY</label>
       <div id="strategies"></div>
 
       <label for="customAnswer">OR TYPE YOUR OWN DEFENSE</label>
       <textarea id="customAnswer" placeholder="你可以写材料、方法、实验、现场观察，也可以承认自己其实不知道……"></textarea>
-      <div class="wordplay">
-        <div class="wordplay-head">
-          <span>LIVE IMPROVISATION BOARD</span>
-          <button id="stitchSentence" class="outline mini" type="button">拼一句</button>
-        </div>
-        <div class="slot-board" id="slotBoard" aria-label="Drag words into defense slots">
-          <div class="slot" data-slot="opening"><span>OPENING</span><strong>拖一个开场</strong></div>
-          <div class="slot" data-slot="move"><span>MOVE</span><strong>拖一个动作</strong></div>
-          <div class="slot" data-slot="concept"><span>CONCEPT</span><strong>拖一个概念</strong></div>
-          <div class="slot" data-slot="proof"><span>PROOF / CHAOS</span><strong>拖证据或离谱理由</strong></div>
-        </div>
-        <div class="improv-meter">
-          <span id="improvStatus">教授正在观察你的临场拼装。</span>
-          <strong id="chaosMeter">CHAOS 0</strong>
-        </div>
-        <div id="wordBank" class="word-bank" aria-label="Phrase bank"></div>
-      </div>
-      <p class="sub">自由输入可以玩。系统会看它是否回应问题、是否有证据、是否过度黑话、是否回避，以及是否触发教授的荒谬矛盾逻辑。</p>
+      <p class="sub">自由输入可以玩。系统会看它是否回应问题、是否有证据、是否过度黑话、是否回避，以及是否触发教授的荒谬矛盾逻辑。不适升高、概念受到欣赏，或随机突发追问，都可能触发现实 Battle。</p>
 
       <div class="actions">
         <button id="submitDefense" type="button">DEFEND YOUR PROJECT</button>
       </div>
+
+      <section id="battle" class="battle" hidden aria-labelledby="battleTitle">
+        <div class="battle-head">
+          <span class="battle-kicker">REALITY BATTLE / 评图现场突发事件</span>
+          <strong>LIVE WORD COLLAGE</strong>
+        </div>
+        <h2 id="battleTitle" tabindex="-1">现实 Battle</h2>
+        <p id="battleReason"></p>
+        <p id="battleIntro" class="sub">评委突然打断答辩。点击开始后，你有 20 秒用磁条拼出答辩：拖进四个槽，或点击词条再点击槽位。超时会自动结算当前拼贴。</p>
+        <div id="battleLive" hidden>
+          <div class="battle-clock">
+            <span>拼贴倒计时 <strong id="battleTimer" role="timer">20 秒</strong></span>
+            <button id="battlePause" class="outline mini" type="button" aria-pressed="false">暂停计时</button>
+          </div>
+          <blockquote id="battleQuestion"></blockquote>
+          <div class="battle-reaction"><span id="battleFace" class="battle-face" aria-hidden="true">:-|</span><span class="sub">评委正在看你现场拼贴。</span></div>
+          <div class="slot-board" id="slotBoard" aria-label="答辩拼贴槽">
+            <button type="button" class="slot" data-slot="opening"><span>OPENING</span><strong>拖一个开场</strong></button>
+            <button type="button" class="slot" data-slot="move"><span>MOVE</span><strong>拖一个动作</strong></button>
+            <button type="button" class="slot" data-slot="concept"><span>CONCEPT</span><strong>拖一个概念</strong></button>
+            <button type="button" class="slot" data-slot="proof"><span>PROOF / CHAOS</span><strong>拖证据或离谱理由</strong></button>
+          </div>
+          <div class="improv-meter">
+            <span id="improvStatus" role="status" aria-live="polite">教授正在观察你的临场拼装。</span>
+            <strong id="chaosMeter">CHAOS 0</strong>
+          </div>
+          <div id="wordBank" class="word-bank" aria-label="磁条词库"></div>
+          <p class="battle-sentence" id="battleSentence" aria-live="polite">你的答辩句子会出现在这里。</p>
+        </div>
+        <p id="battleResponse" class="battle-response" role="status" aria-live="polite"></p>
+        <p id="battleScoreChange" class="scores"></p>
+        <div class="actions">
+          <button id="battleStart" type="button">开始限时拼贴</button>
+          <button id="battleSubmit" type="button" hidden>提交拼贴答辩</button>
+        </div>
+      </section>
 
       <div id="feedbackBlock" hidden>
         <div class="letter">
@@ -189,6 +227,9 @@
     <div class="crumb">?</div>
   </main>
   <script src="./packs.js"></script>
+  <script src="./battle.js"></script>
+  <script src="./critics.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>
+
