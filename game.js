@@ -9,7 +9,6 @@
   const shuffle = arr => arr.slice().sort(() => Math.random() - 0.5);
   const clamp = (x, min, max) => Math.max(min, Math.min(max, x));
   const pack = () => window.DYB_PACKS[$("pack").value];
-  const shareCopy = "发现自己很擅长写学术废话，于是做了一个这样的小游戏，目前只有建筑包体可以体验，欢迎大家加入新的包体。";
   const liveUrl = "https://ginagina19992023.github.io/defend-your-bullshit/";
 
   const state = {
@@ -560,7 +559,6 @@
     $("scoreConfidence").textContent = s.confidence;
     $("scoreSubstance").textContent = s.substance;
     $("scoreDiscomfort").textContent = s.discomfort;
-    $("shareText").textContent = shareCopy;
     drawShareCard();
     show("final");
   }
@@ -589,59 +587,173 @@
     const canvas = $("shareCard");
     const ctx = canvas.getContext("2d");
     const s = state.scores;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#f1eadf";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#252420";
-    ctx.globalAlpha = 0.08;
-    for (let y = 30; y < canvas.height; y += 38) ctx.fillRect(0, y, canvas.width, 2);
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#252420";
-    ctx.font = "900 78px Arial";
-    ctx.fillText("DEFEND YOUR", 64, 110);
-    ctx.fillStyle = "#b83f31";
-    ctx.fillRect(60, 128, 510, 88);
-    ctx.fillStyle = "#f1eadf";
-    ctx.fillText("BULLSHIT.", 76, 196);
-    ctx.save();
-    ctx.translate(755, 112);
-    ctx.rotate(-0.11);
-    ctx.strokeStyle = "#b83f31";
-    ctx.lineWidth = 8;
-    ctx.strokeRect(0, 0, 320, 86);
-    ctx.fillStyle = "#b83f31";
-    ctx.font = "700 28px Consolas";
-    ctx.fillText(state.final.stamp, 20, 53);
-    ctx.restore();
-    ctx.fillStyle = "#252420";
-    ctx.font = "700 22px Consolas";
-    ctx.fillText("PROJECT", 64, 280);
-    ctx.font = "700 34px Arial";
-    wrapCanvasText(ctx, state.project, 64, 325, 600, 42, 2);
-    ctx.font = "900 34px Arial";
-    wrapCanvasText(ctx, state.final.title, 64, 420, 620, 42, 2);
-    const rows = [["CONCEPTUAL DEPTH", s.depth], ["ACADEMIC CONFIDENCE", s.confidence], ["ACTUAL SUBSTANCE", s.substance], ["COMMITTEE DISCOMFORT", s.discomfort]];
-    ctx.font = "700 22px Consolas";
-    rows.forEach((row, i) => {
-      const y = 282 + i * 72;
-      ctx.fillStyle = "#252420";
-      ctx.fillText(row[0], 748, y);
-      ctx.fillStyle = i === 3 ? "#b83f31" : "#252420";
-      ctx.font = "900 48px Arial";
-      ctx.fillText(String(row[1]), 1032, y + 8);
+    const last = state.history[state.history.length - 1] || {};
+    const critique = (last.response || state.final.text || "").replace(/\s+/g, " ");
+    const defense = (last.answer || state.statement || "").replace(/\s+/g, " ");
+    const discomfortPercent = clamp(Math.round((s.discomfort / 20) * 100), 0, 100);
+    const paper = "#efe4d4";
+    const ink = "#1f1d1a";
+    const red = "#c51d19";
+    const tape = "#d7c29c";
+
+    function rect(x, y, w, h, color, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+      ctx.restore();
+    }
+
+    function tapeLabel(text, x, y, w) {
+      ctx.save();
+      ctx.fillStyle = tape;
+      ctx.globalAlpha = 0.78;
+      ctx.fillRect(x, y, w, 38);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = ink;
       ctx.font = "700 22px Consolas";
-      ctx.strokeStyle = "#b8ad9e";
+      ctx.fillText(text, x + 14, y + 27);
+      ctx.restore();
+    }
+
+    function scoreRow(label, value, y, max, color = ink) {
+      const x = 170;
+      const barX = 430;
+      const barW = 360;
+      const fill = clamp(value / max, 0, 1);
+      ctx.fillStyle = ink;
+      ctx.font = "700 24px Consolas";
+      ctx.fillText(label, x, y);
+      rect(barX, y - 24, barW, 24, "#c8c0b5", 0.85);
+      rect(barX, y - 24, barW * fill, 24, color, 0.94);
+      ctx.strokeStyle = "#a99d8f";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(barX, y - 24, barW, 24);
+      ctx.fillStyle = color;
+      ctx.font = "900 38px Arial";
+      ctx.fillText(String(value), 832, y + 5);
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = paper;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = ink;
+    ctx.globalAlpha = 0.075;
+    for (let y = 24; y < canvas.height; y += 34) ctx.fillRect(0, y, canvas.width, 2);
+    for (let i = 0; i < 46; i += 1) {
+      ctx.globalAlpha = 0.08;
       ctx.beginPath();
-      ctx.moveTo(748, y + 22);
-      ctx.lineTo(1110, y + 22);
-      ctx.stroke();
-    });
-    ctx.fillStyle = "#b83f31";
-    ctx.font = "700 23px Arial";
-    wrapCanvasText(ctx, shareCopy, 64, 552, 860, 31, 3);
-    ctx.fillStyle = "#252420";
-    ctx.font = "700 20px Consolas";
-    ctx.fillText(liveUrl, 64, 650);
+      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 10 + Math.random() * 45, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = ink;
+    ctx.font = "700 21px Consolas";
+    ctx.fillText("A final review simulator.", 392, 48);
+    ctx.font = "900 92px Arial";
+    ctx.fillText("DEFEND YOUR", 236, 130);
+    ctx.fillStyle = red;
+    ctx.font = "900 116px Arial";
+    ctx.fillText("BULLSHIT", 288, 230);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(282, 246);
+    ctx.lineTo(790, 232);
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(250, 260);
+    ctx.rotate(-0.06);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 10;
+    ctx.strokeRect(0, 0, 580, 118);
+    ctx.fillStyle = red;
+    ctx.font = "900 72px Arial";
+    ctx.fillText(state.final.passed ? "PASSED" : "FAILED", 118, 76);
+    ctx.font = "900 44px Arial";
+    ctx.fillText("SUCCESSFULLY", 118, 113);
+    ctx.restore();
+
+    tapeLabel("ACADEMIC RANK AWARDED:", 366, 408, 350);
+    ctx.fillStyle = ink;
+    ctx.font = "900 45px Consolas";
+    wrapCanvasText(ctx, state.final.title, 320, 492, 500, 48, 2);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(540, 524, 250, 48, -0.04, 0, Math.PI * 2);
+    ctx.stroke();
+
+    scoreRow("CONCEPTUAL DEPTH", s.depth, 642, 24);
+    scoreRow("ACADEMIC CONFIDENCE", s.confidence, 700, 24);
+    scoreRow("ACTUAL SUBSTANCE", s.substance, 758, 24);
+    scoreRow("COMMITTEE DISCOMFORT", s.discomfort, 816, 20, red);
+
+    tapeLabel("COMMITTEE DISCOMFORT INDEX", 172, 872, 390);
+    ctx.fillStyle = red;
+    ctx.font = "900 76px Arial";
+    ctx.fillText(discomfortPercent + "%", 190, 972);
+    rect(410, 912, 390, 52, "#f7f0e8", 1);
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(410, 912, 390, 52);
+    const cells = 14;
+    for (let i = 0; i < cells; i += 1) {
+      const filled = i / cells < discomfortPercent / 100;
+      rect(424 + i * 26, 922, 20, 32, filled ? red : "#e0d8cd", 0.96);
+    }
+
+    ctx.save();
+    ctx.translate(842, 916);
+    ctx.fillStyle = "#d8cbbb";
+    ctx.beginPath();
+    ctx.arc(0, 0, 58, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = ink;
+    ctx.font = "900 44px Consolas";
+    ctx.fillText(moodFor(s.discomfort).face, -42, 14);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(0, 0, 72, -0.4, 1.1);
+    ctx.stroke();
+    ctx.restore();
+
+    tapeLabel("CRITIQUE EXCERPT:", 134, 1030, 285);
+    ctx.fillStyle = ink;
+    ctx.font = "700 28px Arial";
+    wrapCanvasText(ctx, "“" + critique + "”", 152, 1110, 760, 40, 3);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(150, 1130);
+    ctx.quadraticCurveTo(500, 1160, 865, 1122);
+    ctx.stroke();
+
+    tapeLabel("YOUR DEFENSE:", 134, 1200, 240);
+    ctx.fillStyle = ink;
+    ctx.font = "500 25px Arial";
+    wrapCanvasText(ctx, defense, 224, 1276, 610, 34, 2);
+
+    ctx.save();
+    ctx.translate(906, 1210);
+    ctx.rotate(-0.18);
+    ctx.strokeStyle = red;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 54, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.font = "900 62px Arial";
+    ctx.fillStyle = red;
+    ctx.fillText(state.final.passed ? "B" : "F", -20, 22);
+    ctx.restore();
+
+    ctx.fillStyle = ink;
+    ctx.font = "700 18px Consolas";
+    ctx.fillText(liveUrl, 96, 1326);
   }
 
   function copy(text) {
@@ -707,7 +819,7 @@
   });
   $("copyResult").addEventListener("click", () => {
     const s = state.scores;
-    copy(shareCopy + "\n\nDEFEND YOUR BULLSHIT / FINAL REVIEW\n" + state.final.title + "\nPROJECT: " + state.project + "\nCONCEPTUAL DEPTH: " + s.depth + "\nACADEMIC CONFIDENCE: " + s.confidence + "\nACTUAL SUBSTANCE: " + s.substance + "\nCOMMITTEE DISCOMFORT: " + s.discomfort + "\n" + liveUrl);
+    copy("DEFEND YOUR BULLSHIT / FINAL REVIEW\n" + state.final.title + "\nPROJECT: " + state.project + "\nCONCEPTUAL DEPTH: " + s.depth + "\nACADEMIC CONFIDENCE: " + s.confidence + "\nACTUAL SUBSTANCE: " + s.substance + "\nCOMMITTEE DISCOMFORT: " + s.discomfort + "\n" + liveUrl);
   });
   $("downloadCard").addEventListener("click", () => {
     drawShareCard();

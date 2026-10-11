@@ -7,6 +7,7 @@
   <meta name="description" content="DEFEND YOUR BULLSHIT - 学术废话答辩模拟器。项目可以很简单，理论绝不可以。">
   <meta property="og:title" content="DEFEND YOUR BULLSHIT">
   <meta property="og:description" content="做一个无用的项目。解释它的存在意义。熬过三轮教授质疑。">
+  <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
   <link rel="stylesheet" href="./style.css">
@@ -20,17 +21,9 @@
 
     <section id="setup" class="screen setup-screen">
       <div class="hero-grid">
-        <div class="cover" aria-label="DEFEND YOUR BULLSHIT game cover">
-          <div class="cover-noise"></div>
-          <p class="cover-kicker">FINAL REVIEW SIMULATOR</p>
-          <h1>DEFEND YOUR <span>BULLSHIT.</span></h1>
-          <p class="hand">Your concept is weak. Defend it harder.</p>
-          <div class="cover-card">
-            <span class="stamp">FAILED SUCCESSFULLY</span>
-            <span>THREE QUESTIONS</span>
-            <span>ONE PROJECT</span>
-            <span>ZERO CERTAINTY</span>
-          </div>
+        <div class="cover image-cover" aria-label="DEFEND YOUR BULLSHIT game cover">
+          <img src="./assets/review-wall-cover.png" alt="DEFEND YOUR BULLSHIT final review simulator collage cover">
+          <h1 class="visually-hidden">DEFEND YOUR BULLSHIT.</h1>
         </div>
 
         <div class="setup-panel">
@@ -177,15 +170,10 @@
           <div class="scoreline"><span>ACTUAL SUBSTANCE</span><strong id="scoreSubstance"></strong></div>
           <div class="scoreline"><span>COMMITTEE DISCOMFORT</span><strong id="scoreDiscomfort"></strong></div>
         </div>
-        <div class="card verdict-card">
-          <p class="eyebrow">SHARE TEXT</p>
-          <p id="shareText"></p>
-          <p class="sub">成绩卡由本次真实分数生成，不是固定示例。</p>
-        </div>
       </div>
 
       <div class="share-wrap">
-        <canvas id="shareCard" width="1200" height="675" aria-label="Dynamic share card"></canvas>
+        <canvas id="shareCard" width="1080" height="1350" aria-label="Dynamic share card"></canvas>
       </div>
 
       <div class="actions">

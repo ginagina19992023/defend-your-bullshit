@@ -123,6 +123,12 @@ The intended share copy is:
 
 The final share card is drawn in the browser with the player's actual project title, verdict and scores. It is not a fixed sample image. Use **Download Share Card** on the result screen to export a PNG.
 
+## Visual assets
+
+The cover artwork lives at `assets/review-wall-cover.png` and is used on the start screen and Open Graph metadata.
+
+`assets/share-poster-reference.png` is kept as a visual reference for the result-card style. The exported result card is still generated dynamically in canvas so it can show the player's real score, critique excerpt and defense.
+
 ## Mobile and WeChat
 
 The site is responsive and works on phones. The layout collapses into a single column, the share card scales to the screen width, and the exported PNG keeps a high-resolution canvas size.
