@@ -209,6 +209,7 @@
     ];
     state.statementVariant = ((state.statementVariant ?? -1) + 1) % variants.length;
     state.statement = variants[state.statementVariant].slice(0, intensity + 1).join("\n\n");
+    $("statementProject").textContent = state.project;
     renderStatement([a, b, c]);
     show("statement");
   }
