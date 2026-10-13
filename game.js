@@ -209,8 +209,29 @@
     ];
     state.statementVariant = ((state.statementVariant ?? -1) + 1) % variants.length;
     state.statement = variants[state.statementVariant].slice(0, intensity + 1).join("\n\n");
-    $("generated").textContent = state.statement;
+    renderStatement([a, b, c]);
     show("statement");
+  }
+
+  function renderStatement(concepts) {
+    const container = $("generated");
+    container.replaceChildren();
+    const labels = ["01 / 起手：重新定义", "02 / 展开：把动作讲成系统", "03 / 加码：让概念接管现场", "04 / 收束：把问题留给评委"];
+    const terms = [...new Set([...concepts, "研究", "假设", "观察", "比较", "检验", "试验", "参与者", "过程而非结果", "问题", "意义"])].sort((a,b)=>b.length-a.length);
+    state.statement.split("\n\n").forEach((paragraph,index)=>{
+      const section = document.createElement("section");
+      section.className = "speech-beat" + (index===0 ? " speech-lead" : "");
+      const label = document.createElement("p");label.className="speech-label";label.textContent=labels[index];
+      const body = document.createElement("p");body.className="speech-body";
+      let offset=0, plain="";
+      const flush=()=>{if(plain){body.append(document.createTextNode(plain));plain=""}};
+      while(offset<paragraph.length){
+        const term=terms.find(word=>paragraph.startsWith(word,offset));
+        if(term){flush();const mark=document.createElement("strong");mark.className=concepts.includes(term)?"speech-concept":"speech-keyword";mark.textContent=term;body.append(mark);offset+=term.length}
+        else {plain+=paragraph[offset];offset++}
+      }
+      flush();section.append(label,body);container.append(section);
+    });
   }
 
   function countMatches(text, terms) {

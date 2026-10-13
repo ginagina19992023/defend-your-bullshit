@@ -106,3 +106,6 @@ footer{font-size:10px;border-top:1px solid var(--line);margin-top:55px;padding-t
 
 .masthead{padding-right:40px}.optional-bubble{white-space:nowrap}
 @media(max-width:700px){.optional-bubble{max-width:none;font-size:10px}.masthead{padding-right:34px}}
+
+/* Playable script: a bold opening, conceptual cues and a beat between ideas. */
+#generated{white-space:normal;padding:clamp(20px,4vw,38px);background:#fffaf1}.speech-beat{padding:24px 0;border-top:1px dashed #b8ac99}.speech-beat:first-child{border-top:0;padding-top:0}.speech-beat:last-child{padding-bottom:0}.speech-label{font:700 11px/1.5 Consolas,"Courier New",monospace;color:var(--blue);letter-spacing:.08em;margin:0 0 12px}.speech-body{font-size:clamp(17px,2.2vw,20px);line-height:1.9;margin:0;overflow-wrap:anywhere}.speech-lead .speech-body{font-size:clamp(21px,3vw,27px);line-height:1.65;font-weight:600}.speech-concept{color:var(--red);font-size:1.12em;background:linear-gradient(transparent 70%,#b83f3116 70%);text-decoration:underline wavy #b83f3170;text-underline-offset:5px;text-decoration-thickness:1px}.speech-keyword{color:var(--red);font-weight:700}.speech-hint{color:var(--red)}
