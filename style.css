@@ -91,3 +91,12 @@ footer{font-size:10px;border-top:1px solid var(--line);margin-top:55px;padding-t
 .scenario-label{color:var(--red);font-weight:700}.scenario-goal{padding:8px 10px;background:#e9dfcb;border-left:3px solid var(--blue)}
 
 #historyList details{border:1px solid #b8ac99;padding:16px;margin:12px 0;overflow-wrap:anywhere}#historyList summary{cursor:pointer;font-weight:700}#historyList p{white-space:pre-wrap}#careerInvitation{margin:20px 0}
+
+/* Reviewer marginalia: keep handwriting outside the actual answers. */
+#rank{position:relative;padding:18px 22px;border:3px solid var(--red);border-radius:48% 44% 46% 42% / 34% 45% 35% 42%;transform:rotate(-1deg);margin:24px 0;color:var(--ink)}
+#rank::after{content:"教授亲批 / 大概";position:absolute;right:12px;top:-20px;color:var(--red);font:italic 15px Georgia,"KaiTi",serif;transform:rotate(4deg);background:var(--paper);padding:0 8px}
+#finalStamp{border-style:double;border-width:5px;transform:rotate(-6deg);box-shadow:2px -2px 0 #b83f3140}
+#final .scoreline strong{color:var(--red);border-bottom:2px solid var(--red);transform:rotate(-4deg);padding:0 8px 3px}
+.share-wrap{position:relative;box-shadow:6px 8px 0 #8b79632b;transform:rotate(-.3deg)}
+.career-tagline{text-decoration:underline wavy var(--red);text-underline-offset:7px}
+@media(max-width:600px){#rank{font-size:clamp(21px,6vw,30px);padding:20px 12px}.share-wrap{transform:none}}

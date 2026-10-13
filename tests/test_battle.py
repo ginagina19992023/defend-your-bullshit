@@ -350,6 +350,14 @@ class BattleTests(unittest.TestCase):
         import base64
         Path('/tmp/dyb-full-defense-card.png').write_bytes(base64.b64decode(layout['png'].split(',')[1]))
 
+        preview=self.page.evaluate("""() => {
+            const canvas=document.getElementById('shareCard');
+            DYB_SHARE_CARD.draw(canvas,{project:'把三块石头堆起来，作为一种未完成的公共空间',verdict:{title:'MASTER OF STRATEGIC AMBIGUITY',passed:true},scores:{depth:17,confidence:16,substance:8,discomfort:11},critique:'你居然提供了可检验的内容。委员会对此表示不适。这个概念可以继续，但下次请带一点真正的证据。',defense:'我们会通过原型测试，记录不同人在现场的停留路径，并比较改动前后的使用情况。空间不是结论，而是一种等待被使用的关系。',careerTitle:'学术嘴替',url:'ginagina19992023.github.io/defend-your-bullshit/'});
+            return canvas.toDataURL();
+        }""")
+        Path('/tmp/dyb-doodle-card.png').write_bytes(base64.b64decode(preview.split(',')[1]))
+
+
     def test_pre_scenarios_and_unlocked_theme_reach_review(self):
         self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
         self.page.reload()

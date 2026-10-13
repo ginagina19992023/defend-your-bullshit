@@ -185,7 +185,7 @@ The intended share copy is:
 
 > 发现自己很擅长写学术废话，于是做了一个这样的小游戏，从建筑评图接单开始，通关后解锁艺术和创业主题，欢迎大家加入新的包体。
 
-The final share card is drawn in the browser with the player's actual project title, verdict, scores and full final normal defense. Its smaller defense text wraps all paragraphs, and canvas height grows to fit every line; neither title nor defense is truncated. It is not a fixed sample image. Use **Download Share Card** on the result screen to export a PNG.
+The final share card is drawn in the browser with the player's actual project title, verdict, scores and full final normal defense. Its smaller defense text wraps all paragraphs, and canvas height grows to fit every line; neither title nor defense is truncated. Red pencil circles, wavy underlines, score-dependent marginal comments, torn tape labels and paper grain echo the original collage references. The original cover supplies architectural margins and a bottom review-panel collage when it has loaded; the card also renders without that image. It is not a fixed sample image. Use **Download Share Card** on the result screen to export a PNG.
 
 ## Visual assets
 
