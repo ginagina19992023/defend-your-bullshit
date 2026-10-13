@@ -15,11 +15,53 @@
 <body>
   <main class="paper">
     <header class="masthead">
-      <span>LOCAL RULE ENGINE / FICTIONAL FINAL REVIEW</span>
-      <span class="red">ARCHITECTURE PACK AVAILABLE</span>
+      <span>DEFEND YOUR BULLSHIT / 三轮答辩</span>
+      <span id="modeLabel" class="red">简易单局 · 上台就开讲</span>
     </header>
 
-    <section id="setup" class="screen setup-screen">
+    <div id="careerStrip" class="career-strip" aria-live="polite"></div>
+
+    <section id="career" hidden class="screen career-screen" aria-labelledby="careerTitle">
+      <div class="career-masthead">
+        <div><p class="eyebrow">SAY IT FOR ME CLUB / 会员档案</p><h1 id="careerTitle" class="career-title">职业嘴替</h1><p class="career-tagline">项目不是你的。锅可能是你的。</p></div>
+        <div class="member-stamp"><strong id="memberTier">试用嘴替</strong><span id="memberAccount"></span></div>
+      </div>
+      <p class="intro">你是一名替客户上台汇报的 Agent。接单、拼话术、应付评委，再用到账的钱买吃的和 Token。目标是成为高级代汇报 Agent，并保住嘴替俱乐部的会员资格。</p>
+      <div id="careerMessage" class="career-message" role="status" aria-live="polite"></div>
+      <div id="accountClosed" class="account-closed" hidden><h2>这个号，讲不下去了。</h2><p>客户黑名单累计达到 3 次。俱乐部停止派单，你只能销号，从试用嘴替重新开始。</p></div>
+      <div class="career-layout">
+        <div class="career-main">
+          <div id="activeJob" class="active-job" hidden></div>
+          <section class="dispatch"><div class="dispatch-heading"><h2>今天替谁说话？</h2><span>委托准备：时间 2 · 饱腹 20 · Token 6</span></div><div id="jobBoard" class="job-board"></div></section>
+          <section id="lifeEvent" class="life-event" hidden aria-labelledby="lifeEventTitle"><p class="eyebrow">门口来了一件事</p><h2 id="lifeEventTitle"></h2><p id="lifeEventText"></p><div id="lifeEventChoices" class="life-choices"></div></section>
+          <section class="career-log"><h3>值班记录</h3><ol id="careerLog"></ol></section>
+        </div>
+        <aside class="career-sidebar">
+          <section class="member-card"><p class="eyebrow">会员状态</p><div id="careerStats" class="career-stats"></div><p id="clubAudit" class="sub"></p><div id="unlockRoadmap" class="unlock-roadmap"></div></section>
+          <section class="supply-card"><p class="eyebrow">让嘴替继续运转</p><div class="supply-actions">
+            <button id="eatFood" type="button">吃一份盒饭 / 饱腹 +35</button>
+            <button id="buyFood" class="outline" type="button">买两份盒饭 / ¥18 · 用时 1</button>
+            <button id="buyTokens" class="outline" type="button">买 10 Token / ¥20 · 用时 1</button>
+            <button id="deliverFood" class="outline" type="button">同行送盒饭 / ¥23 · 用时 0</button>
+            <button id="deliverTokens" class="outline" type="button">同行送 Token / ¥25 · 用时 0</button>
+            <button id="clubChore" class="outline" type="button">俱乐部打杂 / 用时 1</button>
+            <button id="sleepDay" class="outline" type="button">休息到明天 / 时间恢复 · 饱腹 -10</button>
+          </div><p id="courierStatus" class="sub"></p><p class="sub">打杂每天一次：¥15、盒饭 1、Token 2，不赚晋升经验。这里的 Token 是游戏内的话术储备。</p></section>
+        </aside>
+      </div>
+      <details class="career-rules"><summary>俱乐部怎么运转？</summary><ul>
+        <li>每单是三轮汇报，磁条 Battle 仍可能突发。通过赚现金与经验；失败只报销 ¥8，并被客户拉黑一次。</li>
+        <li>通关 2 单解锁艺术、竞赛终审和支线任务；4 单解锁创业、业主汇报和会员推荐。加单达到目标另奖 ¥12 与 5 经验。</li>
+        <li>注册嘴替：2 次通关、20 经验；资深嘴替：4 次通关、45 经验；高级 Agent：7 次通关、80 经验。</li>
+        <li>每 3 单审核：注册会员需最近 3 单通过 1 单；资深需通过 2 单且覆盖 2 场景；高级需通过 2 单且覆盖 2 主题。口碑都需 ≥-3，会费分别 ¥10、¥20、¥30。</li>
+        <li>审核失败降一级，暂停晋升至下次审核通过。内容解锁保留。存粮与话术不足时，打杂可以重新积累物资。</li>
+        <li>错误签收和同行交易可能带来下一单的投诉。黑名单达到 3 次时停用账号；销号重开会清空这次生涯。</li>
+      </ul><p class="sub">生涯保存在当前浏览器。刷新后可继续已接委托，从第 1 轮重新汇报，准备成本不重复扣除。</p></details>
+      <button id="returnSimple" class="outline" type="button">回简易版 / 保留职业生涯</button>
+      <div class="actions"><button id="resetCareer" class="outline" type="button">销号重开</button></div>
+    </section>
+
+    <section id="setup" class="screen setup-screen" hidden>
       <div class="hero-grid">
         <div class="cover image-cover" aria-label="DEFEND YOUR BULLSHIT game cover">
           <img src="./assets/review-wall-cover.png" alt="DEFEND YOUR BULLSHIT final review simulator collage cover">
@@ -27,12 +69,15 @@
         </div>
 
         <div class="setup-panel">
+          <div class="actions"><button id="viewHistory" class="outline mini" type="button">我的每局历史</button><button id="enterCareer" class="outline mini" type="button" hidden>进入职业俱乐部</button></div>
+          <div id="jobBrief" class="job-brief"></div>
+          <button id="backToClub" class="outline mini" type="button">返回俱乐部 / 保留委托</button>
           <p class="intro">一个荒谬项目。三轮教授质疑。你唯一的武器是学术语言。目标不是证明项目有用，而是让它看起来无法被轻易否定。</p>
 
           <details class="howto" open>
             <summary>HOW TO PLAY / 怎么通关</summary>
             <ol>
-              <li>选择建筑包体，输入或随机抽一个项目。</li>
+              <li>为当前客户输入项目，或随机抽取。委托主题与场景由俱乐部派单决定。</li>
               <li>生成概念陈述，然后进入三轮答辩。</li>
               <li>每轮选择策略，或写自己的回答。自由输入会被本地规则检测关键词、证据、概念堆叠和回避程度。</li>
               <li>通关需要：Conceptual Depth >= 8，Academic Confidence >= 8，Actual Substance >= 4，并且 Committee Discomfort 保持在 4-15。</li>
@@ -57,7 +102,7 @@
             <div>
               <label for="pack">01 / DISCIPLINE PACK</label>
               <select id="pack"></select>
-              <p class="sub">目前只有建筑包体。欢迎加入新的学科包体。</p>
+              <p id="packHint" class="sub">简易版可以直接选择主题；每局分数独立计算。</p>
             </div>
             <div>
               <label for="intensity">02 / THEORETICAL INTENSITY</label>
@@ -93,7 +138,7 @@
             <button id="random" class="outline" type="button">随机抽一个项目</button>
             <button id="generate" type="button">GENERATE STATEMENT</button>
           </div>
-          <p class="sub">这是本地模板与规则引擎，不是实时 AI 生成。你可以输入自己的建筑概念继续玩，但系统理解能力有限，会用可解释的关键词规则评分。</p>
+          <p class="sub">这是本地模板与规则引擎，不是实时 AI 生成。你可以输入客户的项目概念继续玩，但系统理解能力有限，会用可解释的关键词规则评分。</p>
         </div>
       </div>
     </section>
@@ -196,10 +241,13 @@
       </div>
     </section>
 
+    <section id="sessionHistory" class="screen" hidden><p class="eyebrow">MY REVIEWS / 每局历史</p><h2>讲过的每一局</h2><p>简易版和职业版分开标记，点击记录查看三轮回答与结果。历史保存在当前浏览器。</p><div id="historyList"></div><button id="historyBack" type="button">返回</button></section>
     <section id="final" class="screen" hidden>
       <p id="finalStamp" class="stamp">OFFICIALLY UNRESOLVED</p>
       <h2 id="rank"></h2>
       <p id="ending"></p>
+      <section id="careerInvitation" class="life-event" hidden><p class="eyebrow">一封来自嘴替俱乐部的邀请</p><h2>你愿意成为职业代理人吗？</h2><p>接委托、晋升会员、解锁场景，也要安排食物、Token 和客户关系。你也可以继续轻松玩，每局独立结算。</p><div class="actions"><button id="acceptInvitation" type="button">愿意 / 加入职业嘴替</button><button id="declineInvitation" class="outline" type="button">继续简易版</button></div></section>
+      <div id="careerSettlement" class="career-settlement" role="status"></div>
 
       <div class="final-grid">
         <div class="card score-card">
@@ -217,7 +265,7 @@
       <div class="actions">
         <button id="downloadCard" type="button">DOWNLOAD SHARE CARD</button>
         <button id="copyResult" class="outline" type="button">COPY FINAL REPORT</button>
-        <button id="restart" class="outline" type="button">RETAKE STUDIO</button>
+        <button id="restart" class="outline" type="button">返回嘴替俱乐部</button>
       </div>
     </section>
 
@@ -229,6 +277,10 @@
   <script src="./packs.js"></script>
   <script src="./battle.js"></script>
   <script src="./critics.js"></script>
+  <script src="./share-card.js"></script>
+  <script src="./career.js"></script>
+  <script src="./career-ui.js"></script>
+  <script src="./play-session.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>

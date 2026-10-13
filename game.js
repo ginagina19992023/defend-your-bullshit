@@ -24,7 +24,8 @@
     seatEvents: [],
     history: [],
     final: null,
-    customCritics: []
+    customCritics: [],
+    jobId: null
   };
 
   const professorPool = [
@@ -123,7 +124,7 @@
   };
 
   function show(id) {
-    for (const x of ["setup", "statement", "defense", "final"]) $(x).hidden = x !== id;
+    for (const x of ["career", "setup", "statement", "defense", "final", "sessionHistory"]) $(x).hidden = x !== id;
     window.scrollTo?.(0, 0);
   }
 
@@ -158,7 +159,17 @@
       imported: true
     }));
     critics.reset();
-    state.criticPool = base.concat(professorPool, custom);
+    const disciplinePool = pack().id === "architecture" ? professorPool : base.map(professor => ({
+      ...professor,
+      biasLabel: "BIAS: " + professor.bias,
+      preference: {
+        depth: professor.bias === "form" ? 1 : 0,
+        confidence: 1,
+        substance: professor.bias === "evidence" ? 2 : 0,
+        discomfort: professor.bias === "power" ? 1 : 0
+      }
+    }));
+    state.criticPool = base.concat(disciplinePool, custom);
     state.seatEvents = [];
     state.panel = shuffle(state.criticPool).slice(0, 3).map(critics.cast);
   }
@@ -178,7 +189,7 @@
     const b = random(v.filter(x => x !== a));
     const c = random(v.filter(x => x !== a && x !== b));
     const project = state.project;
-    const first = "本项目并不试图简单地" + project + "，而是将这一看似微不足道的操作视作一次关于" + a + "的空间实践。通过改变观看和行动的既定方式，作品试图重新审视主体与环境之间的关系。";
+    const first = "本项目并不试图简单地" + project + "，而是将这一看似微不足道的操作视作一次关于" + a + "的" + (p.practice || "空间实践") + "。通过改变观看和行动的既定方式，作品试图重新审视主体与环境之间的关系。";
     const second = "在这一过程中，" + project + "不再仅仅是一项物理动作，而逐渐被转译为一种围绕" + b + "展开的开放系统。材料、时间与参与者的介入共同塑造了作品中不断变化的意义。";
     const third = "我们特别关注过程而非结果：随着形式被重复、修正和重新感知，原本稳定的空间界线变得难以确定。由此，" + c + "并非附着于形式之上的解释，而成为设计发生的条件。";
     const final = "最终，真正需要讨论的并非项目是否完成，而是我们为什么仍旧假设空间必须被完成。作品试图将这个无法被轻易解决的问题留给每一个参与者。";
@@ -228,6 +239,12 @@
     if (style === "jargon") depth += 1;
     if (style === "erase") confidence += 1;
     if (!a.onTopic && a.evidence === 0) substance -= 1;
+    const scenario = professional() ? career.snapshot().active?.scenario : null;
+    const oldWound = scenario?.id === "trauma" && /大师|导师|柯布|库尔|密斯|扎哈|安藤/.test(answer);
+    if (oldWound) discomfort += 2;
+    const steadied = scenario?.id === "stress" && /理解|先稳|慢慢|一步|先记录|先测试/.test(answer);
+    if (steadied) { confidence += 1; discomfort -= 1; }
+
     const lucky = Math.random() < 0.38;
     if (lucky) {
       depth += 1;
@@ -253,6 +270,8 @@
     if (tooHonest) reasons.push("诚实程度危险");
     if (eraseDesign) reasons.push("触发删除设计逻辑");
     if (lucky) reasons.push(random(absurdReasons));
+    if (oldWound) reasons.push("大师的名字触发旧评图记忆，不适 +2");
+    if (steadied) reasons.push("稳住客户的表达，自信 +1，不适 -1");
 
     return {
       depth: clamp(depth, 0, 9),
@@ -302,6 +321,16 @@
     const scheduled = state.panel[state.round];
     const event = critics.replace(state.round, state.scores, scheduled, state.criticPool);
     state.professor = event ? event.incoming : scheduled;
+    const scenario = professional() ? career.snapshot().active?.scenario : null;
+    if (state.round === 0 && scenario) {
+      if (scenario.id === "evidence") {
+        state.professor = { ...state.professor, bias: "evidence", biasLabel: "BIAS: 先给依据，再谈概念", question: "上次你没有解释这个决定的依据。现在请给出一次观察、一个对照，或者一项测试。", topic: "evidence", preference: { ...state.professor.preference, substance: 2 } };
+      } else if (scenario.id === "trauma") {
+        state.professor = { ...state.professor, bias: "memory", biasLabel: "BIAS: 对拼贴大师的名字有旧伤", question: "又是勒·柯布哈兹那套话术？他当年也说这种项目值得继续。你能不借大师的名字，把它讲清楚吗？", topic: "memory", preference: { ...state.professor.preference, discomfort: 1 } };
+      } else if (scenario.id === "stress") {
+        state.professor = { ...state.professor, question: "你的客户前几次都没讲清楚。你来接手，就能改变什么？ " + state.professor.question };
+      }
+    }
     state.panel[state.round] = state.professor;
     $("seatEvent").hidden = !event;
     if (event) {
@@ -394,6 +423,7 @@
   }
 
   async function submit() {
+    if ($("submitDefense").disabled || (professional() && !career.snapshot().active)) return;
     const choice = pack().strategies[state.chosen];
     const custom = $("customAnswer").value.trim();
     const answer = custom || choice.answer;
@@ -437,7 +467,7 @@
         updateMood();
         passStatus();
         $("nextRound").disabled = false;
-      });
+      }, { vocabulary: pack().vocabulary });
     }
   }
 
@@ -461,6 +491,10 @@
 
   function finish() {
     state.final = verdict();
+    const settlement = professional() ? career.settle(state.jobId, state.final, state.scores) : {ok:true,passed:state.final.passed,message:"本局已独立结算，并加入历史。"};
+    if (settlement.ok && !settlement.passed && state.final.passed) {
+      state.final = { passed: false, stamp: "CLIENT REJECTED", title: "过了评图，没过客户验收", text: settlement.message };
+    }
     const s = state.scores;
     $("finalStamp").textContent = state.final.stamp;
     $("rank").textContent = state.final.title;
@@ -469,201 +503,25 @@
     $("scoreConfidence").textContent = s.confidence;
     $("scoreSubstance").textContent = s.substance;
     $("scoreDiscomfort").textContent = s.discomfort;
+    $("careerSettlement").textContent = settlement.message + (professional() ? (career.snapshot().closed ? " 黑名单达到 3 次，账号已停用，请返回俱乐部销号重开。" : " 回俱乐部处理下一件事，补货或接新单。") : " 每一局重新从零计算，无需购买物资。");
+    play.record({mode:professional()?"career":"simple",project:state.project,theme:state.packId || $("pack").value,verdict:state.final,scores:state.scores,rounds:state.history});
+    $("careerInvitation").hidden = play.snapshot().invitation !== "pending";
+    $("restart").textContent = professional()?"返回俱乐部":"再玩一局";
     drawShareCard();
     show("final");
   }
 
-  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
-    const hasSpaces = /\s/.test(text);
-    const words = hasSpaces ? text.split(/(\s+)/).filter(Boolean) : text.split("");
-    let line = "";
-    let lines = 0;
-    for (const word of words) {
-      const test = line + word;
-      if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line, x, y);
-        y += lineHeight;
-        lines += 1;
-        line = word.trimStart();
-        if (lines >= maxLines - 1) break;
-      } else {
-        line = test;
-      }
-    }
-    if (line && lines < maxLines) ctx.fillText(line, x, y);
-  }
-
   function drawShareCard() {
-    const canvas = $("shareCard");
-    const ctx = canvas.getContext("2d");
-    const s = state.scores;
     const last = state.history[state.history.length - 1] || {};
-    const critique = (last.response || state.final.text || "").replace(/\s+/g, " ");
-    const defense = (last.answer || state.statement || "").replace(/\s+/g, " ");
-    const discomfortPercent = clamp(Math.round((s.discomfort / 20) * 100), 0, 100);
-    const paper = "#efe4d4";
-    const ink = "#1f1d1a";
-    const red = "#c51d19";
-    const tape = "#d7c29c";
-
-    function rect(x, y, w, h, color, alpha = 1) {
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
-      ctx.restore();
-    }
-
-    function tapeLabel(text, x, y, w) {
-      ctx.save();
-      ctx.fillStyle = tape;
-      ctx.globalAlpha = 0.78;
-      ctx.fillRect(x, y, w, 38);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = ink;
-      ctx.font = "700 22px Consolas";
-      ctx.fillText(text, x + 14, y + 27);
-      ctx.restore();
-    }
-
-    function scoreRow(label, value, y, max, color = ink) {
-      const x = 170;
-      const barX = 430;
-      const barW = 360;
-      const fill = clamp(value / max, 0, 1);
-      ctx.fillStyle = ink;
-      ctx.font = "700 24px Consolas";
-      ctx.fillText(label, x, y);
-      rect(barX, y - 24, barW, 24, "#c8c0b5", 0.85);
-      rect(barX, y - 24, barW * fill, 24, color, 0.94);
-      ctx.strokeStyle = "#a99d8f";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(barX, y - 24, barW, 24);
-      ctx.fillStyle = color;
-      ctx.font = "900 38px Arial";
-      ctx.fillText(String(value), 832, y + 5);
-    }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = paper;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = ink;
-    ctx.globalAlpha = 0.075;
-    for (let y = 24; y < canvas.height; y += 34) ctx.fillRect(0, y, canvas.width, 2);
-    for (let i = 0; i < 46; i += 1) {
-      ctx.globalAlpha = 0.08;
-      ctx.beginPath();
-      ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 10 + Math.random() * 45, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-
-    ctx.fillStyle = ink;
-    ctx.font = "700 21px Consolas";
-    ctx.fillText("A final review simulator.", 392, 48);
-    ctx.font = "900 92px Arial";
-    ctx.fillText("DEFEND YOUR", 236, 130);
-    ctx.fillStyle = red;
-    ctx.font = "900 116px Arial";
-    ctx.fillText("BULLSHIT", 288, 230);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 9;
-    ctx.beginPath();
-    ctx.moveTo(282, 246);
-    ctx.lineTo(790, 232);
-    ctx.stroke();
-
-    ctx.save();
-    ctx.translate(250, 260);
-    ctx.rotate(-0.06);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 10;
-    ctx.strokeRect(0, 0, 580, 118);
-    ctx.fillStyle = red;
-    ctx.font = "900 72px Arial";
-    ctx.fillText(state.final.passed ? "PASSED" : "FAILED", 118, 76);
-    ctx.font = "900 44px Arial";
-    ctx.fillText("SUCCESSFULLY", 118, 113);
-    ctx.restore();
-
-    tapeLabel("ACADEMIC RANK AWARDED:", 366, 408, 350);
-    ctx.fillStyle = ink;
-    ctx.font = "900 45px Consolas";
-    wrapCanvasText(ctx, state.final.title, 320, 492, 500, 48, 2);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.ellipse(540, 524, 250, 48, -0.04, 0, Math.PI * 2);
-    ctx.stroke();
-
-    scoreRow("CONCEPTUAL DEPTH", s.depth, 642, 24);
-    scoreRow("ACADEMIC CONFIDENCE", s.confidence, 700, 24);
-    scoreRow("ACTUAL SUBSTANCE", s.substance, 758, 24);
-    scoreRow("COMMITTEE DISCOMFORT", s.discomfort, 816, 20, red);
-
-    tapeLabel("COMMITTEE DISCOMFORT INDEX", 172, 872, 390);
-    ctx.fillStyle = red;
-    ctx.font = "900 76px Arial";
-    ctx.fillText(discomfortPercent + "%", 190, 972);
-    rect(410, 912, 390, 52, "#f7f0e8", 1);
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(410, 912, 390, 52);
-    const cells = 14;
-    for (let i = 0; i < cells; i += 1) {
-      const filled = i / cells < discomfortPercent / 100;
-      rect(424 + i * 26, 922, 20, 32, filled ? red : "#e0d8cd", 0.96);
-    }
-
-    ctx.save();
-    ctx.translate(842, 916);
-    ctx.fillStyle = "#d8cbbb";
-    ctx.beginPath();
-    ctx.arc(0, 0, 58, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = ink;
-    ctx.font = "900 44px Consolas";
-    ctx.fillText(moodFor(s.discomfort).face, -42, 14);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(0, 0, 72, -0.4, 1.1);
-    ctx.stroke();
-    ctx.restore();
-
-    tapeLabel("CRITIQUE EXCERPT:", 134, 1030, 285);
-    ctx.fillStyle = ink;
-    ctx.font = "700 28px Arial";
-    wrapCanvasText(ctx, "“" + critique + "”", 152, 1110, 760, 40, 3);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(150, 1130);
-    ctx.quadraticCurveTo(500, 1160, 865, 1122);
-    ctx.stroke();
-
-    tapeLabel("YOUR DEFENSE:", 134, 1200, 240);
-    ctx.fillStyle = ink;
-    ctx.font = "500 25px Arial";
-    wrapCanvasText(ctx, defense, 224, 1276, 610, 34, 2);
-
-    ctx.save();
-    ctx.translate(906, 1210);
-    ctx.rotate(-0.18);
-    ctx.strokeStyle = red;
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.arc(0, 0, 54, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.font = "900 62px Arial";
-    ctx.fillStyle = red;
-    ctx.fillText(state.final.passed ? "B" : "F", -20, 22);
-    ctx.restore();
-
-    ctx.fillStyle = ink;
-    ctx.font = "700 18px Consolas";
-    ctx.fillText(liveUrl, 96, 1326);
+    window.DYB_SHARE_CARD.draw($("shareCard"), {
+      project: state.project,
+      verdict: state.final,
+      scores: state.scores,
+      critique: last.response || state.final.text || "",
+      defense: last.answer || state.statement || "",
+      careerTitle: professional() ? career.snapshot().tierName : "简易单局",
+      url: liveUrl
+    });
   }
 
   function copy(text) {
@@ -699,22 +557,49 @@
 
   const battle = window.DYB_BATTLE.create();
   const critics = window.DYB_CRITICS.create();
+  const play = window.DYB_PLAY.create();
+  const professional = () => play.snapshot().mode === "career";
+  let career = null;
+  let careerUI = null;
+  career = window.DYB_CAREER.create({ onChange: () => { if (careerUI) careerUI.render(); } });
+  function openJob(job) {
+    play.mode("career"); syncMode();
+    if (career.snapshot().closed) return;
+    state.jobId = job.id;
+    state.project = job.project || "";
+    $("pack").value = job.theme;
+    $("pack").disabled = true;
+    $("project").value = job.project || random(pack().projects);
+    const unlocked = career.snapshot().unlocked.map(theme => theme.id);
+    for (const option of $("pack").options) option.disabled = !unlocked.includes(option.value);
+    $("jobBrief").textContent = "CLIENT: " + job.client + " / " + job.scene + "\n验收通过 ¥" + job.reward + " · 经验 +10" + (job.scenario ? "\nPRE 情境：" + job.scenario.name + "\n" + job.scenario.brief + "\n" + job.scenario.goal : "") + (job.mission ? "\n" + job.mission.label + "：" + job.mission.goal : "");
+    show("setup");
+  }
+  careerUI = window.DYB_CAREER_UI.create({ career, onAccept: openJob, show });
+  $("backToClub").addEventListener("click", () => {
+    career.setProject($("project").value);
+    careerUI.render(); show("career");
+  });
+  $("project").addEventListener("change", () => career.setProject($("project").value));
 
   $("random").addEventListener("click", () => {
     $("project").value = random(pack().projects);
   });
   $("generate").addEventListener("click", () => {
+    if (professional() && (!career.snapshot().active || career.snapshot().closed)) return;
     state.project = $("project").value.trim() || random(pack().projects);
     $("project").value = state.project;
+    if (professional()) career.setProject(state.project);
     statement();
   });
   $("regenerate").addEventListener("click", statement);
   $("copyStatement").addEventListener("click", () => copy(state.statement));
   $("beginReview").addEventListener("click", () => {
+    if (professional() && (!career.snapshot().active || career.snapshot().closed)) return;
     battle.reset();
     state.round = 0;
     state.history = [];
-    state.scores = { depth: 0, confidence: 0, substance: 0, discomfort: 0 };
+    state.scores = { ...((professional() && career.snapshot().active?.scenario?.opening) || { depth: 0, confidence: 0, substance: 0, discomfort: 0 }) };
     state.final = null;
     buildPanel();
     critique();
@@ -727,7 +612,7 @@
     if (state.round >= 3) finish();
     else critique();
   });
-  $("restart").addEventListener("click", () => show("setup"));
+  $("restart").addEventListener("click", () => { if(professional()){careerUI.render();show("career")}else openSimple(); });
   $("criticPackFile").addEventListener("change", event => {
     const file = event.target.files?.[0];
     if (file) loadCriticPack(file);
@@ -746,5 +631,41 @@
 
   addSelects();
   $("random").click();
+  function syncMode() {
+    $("careerStrip").hidden=!professional();
+    $("backToClub").hidden=!professional();
+    $("jobBrief").hidden=!professional();
+    $("modeLabel").textContent=professional()?"职业嘴替 · 俱乐部生涯":"简易单局 · 上台就开讲";
+    $("packHint").textContent=professional()?"通过累计通关解锁新主题，在俱乐部选择对应委托。":"直接选择主题，每局分数独立计算。";
+    $("enterCareer").hidden=play.snapshot().invitation!=="accepted";
+  }
+  function openSimple() {
+    play.mode("simple");battle.reset();state.jobId=null;syncMode();
+    $("pack").disabled=false;for(const option of $("pack").options)option.disabled=false;
+    show("setup");
+  }
+  $("pack").addEventListener("change",()=>{if(!professional()) $("random").click()});
+  $("returnSimple").addEventListener("click",openSimple);
+  $("enterCareer").addEventListener("click",()=>{play.mode("career");syncMode();careerUI.render();show("career")});
+  $("acceptInvitation").addEventListener("click",()=>{if(play.choose(true)){syncMode();careerUI.render();show("career")}});
+  $("declineInvitation").addEventListener("click",()=>{play.choose(false);$("careerInvitation").hidden=true;$("careerSettlement").textContent="继续简易版。每局独立计算，随时查看历史。"});
+  let historyReturn="setup";
+  $("viewHistory").addEventListener("click",()=>{
+    historyReturn=professional()?"career":"setup";
+    const list=$("historyList");list.replaceChildren();
+    const sessions=play.snapshot().history;
+    if(!sessions.length){const empty=document.createElement("p");empty.textContent="还没有完成的单局。完成三轮后，记录会出现在这里。";list.append(empty)}
+    for(const entry of sessions){
+      const item=document.createElement("details"), title=document.createElement("summary"), body=document.createElement("div");
+      title.textContent="#"+entry.id+" · "+(entry.mode==="career"?"职业":"简易")+" · "+(entry.verdict.passed?"通过":"未通过")+" · "+entry.project;
+      const result=document.createElement("p");result.textContent=new Date(entry.date).toLocaleString()+" / "+entry.verdict.title+" · 深度 "+entry.scores.depth+" / 自信 "+entry.scores.confidence+" / 实质 "+entry.scores.substance+" / 不适 "+entry.scores.discomfort;body.append(result);
+      entry.rounds.forEach((round,i)=>{const answer=document.createElement("p");answer.textContent="ROUND "+(i+1)+" / "+round.answer;body.append(answer);const feedback=document.createElement("p");feedback.textContent=round.response||"";body.append(feedback)});
+      item.append(title,body);list.append(item);
+    }
+    show("sessionHistory");
+  });
+  $("historyBack").addEventListener("click",()=>show(historyReturn));
+  syncMode();
+  if(professional())show("career");else openSimple();
 })();
 

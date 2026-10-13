@@ -1,6 +1,6 @@
 # DEFEND YOUR BULLSHIT
 
-A satirical architecture final-review game about defending a weak project with suspiciously confident academic language.
+A satirical presentation-stand-in career game: join the 职业嘴替 club, take client briefs, survive reviews, and keep your membership while managing food, time and in-game Tokens.
 
 Live site:
 
@@ -12,15 +12,15 @@ This is a static browser game. It works without a backend, build step or private
 
 The core game is a local template/rule engine. Optional AI feedback can add variety, but the game always falls back to local rules when the free service is slow, unavailable or blocked.
 
-Players can type their own architecture concept. The game can generate a statement and score custom defenses with explainable keyword rules. It does not deeply understand architecture; it playfully detects topic relevance, evidence, jargon, evasion, honesty, deletion and timed word-collage Battles.
+Players can type their own project concept in architecture, contemporary art or startup pitches. The game can generate a statement and score custom defenses with explainable keyword rules. It does not deeply understand architecture; it playfully detects topic relevance, evidence, jargon, evasion, honesty, deletion and timed word-collage Battles.
 
 All reviewers are fictional. Do not add real faculty, real institutional branding or identifiable critic stories.
 
 ## How to play
 
-1. Open the site.
-2. Choose the Architecture Pack.
-3. Type your actual project, or click the random project button.
+1. Start in Simple Mode: choose a theme and play a standalone three-round review. Scores reset each game; no economy or membership is required.
+2. After finishing your first game (pass or fail), receive a club invitation. Accept to enter Career Mode, or decline and keep playing Simple Mode indefinitely.
+3. Type the client project, or click the random project button.
 4. Optionally choose an AI feedback mode:
    - **Free web AI**: tries a public no-key text endpoint, suitable for WeChat sharing but not guaranteed.
    - **Local rules only**: most stable.
@@ -28,7 +28,53 @@ All reviewers are fictional. Do not add real faculty, real institutional brandin
 5. Generate a concept statement.
 6. Submit it to a fictional review panel.
 7. Survive three rounds of critique.
-8. Download the dynamic share card or copy the final report.
+8. Collect the payout, download the share card, then return to the club to handle events, rest, buy supplies and take another job.
+
+## Simple Mode and invitation
+
+Simple Mode is the default for new players, including WeChat visitors. All three themes are available immediately; three-round scores start from zero each game. Battle and fictional critic events remain active, without hunger, Token costs, blacklists or mandatory career progression.
+
+Every completed game saves its project, verdict, four scores and three answers/critic responses in local history. The history list distinguishes Simple and Career games. The first completed game produces one invitation, regardless of its outcome. Declining permanently dismisses it; future simple games continue freely. Accepting opens the club with a fresh career inventory. Career members can return to Simple Mode and later re-enter the club without losing career state. The career economy only changes while playing Career Mode. Both history and career are stored in the current browser; private/blocked storage supports only the current session.
+
+## 职业嘴替 / Career loop
+
+Career state is saved locally in the browser. A reload retains resources, unlocked themes, events and the accepted job. Resume starts its review again at round 1 without charging preparation twice; individual round progress is not saved. Blocked browser storage permits a temporary session.
+
+| Membership | Required cleared jobs | Experience |
+| --- | --- | --- |
+| 试用嘴替 | 0 | 0 |
+| 注册嘴替 | 2 | 20 |
+| 资深嘴替 | 4 | 45 |
+| 高级代汇报 Agent | 7 | 80 |
+
+Clearing 2 jobs unlocks contemporary art, architecture competition finals and client side missions. Clearing 4 unlocks startup pitches, owner presentations and recommendation events. Cleared means both the academic verdict and the PRE acceptance goal pass. Normal jobs award 10 XP, 2 reputation and the listed fee; failed jobs award 2 XP, ¥8 and one blacklist. A completed optional mission adds ¥12, 5 XP and 1 reputation.
+
+Every 3 settled jobs, the club checks the most recent 3 jobs. Registered members need 1 clear and ¥10; senior members need 2 clears in 2 scenes and ¥20; advanced agents need 2 clears in 2 themes and ¥30. All require reputation ≥−3. Failure demotes one tier and freezes promotion until a later audit succeeds. Previously unlocked content remains available.
+
+Food costs ¥18 for 2 portions; 10 Tokens cost ¥20. A shopping trip takes 1 time. Eating a portion restores 35 hunger (maximum 100). Rest advances a day, restores time to 6 and consumes 10 hunger. Once per day, a 1-time club chore earns ¥15, 1 food and 2 Tokens, allowing recovery even with no cash. Tokens are fictional inventory, separate from optional AI API usage. Three blacklists disable the account; the two-click reset clears the career and starts a new account.
+
+## PRE client situations
+
+Each new offer draws equally from these four situations. Its scene, client and PRE are retained across reloads. Premiums are included in the displayed fee.
+
+| PRE | Opening scores (depth / confidence / substance / discomfort) | Actual gameplay effect | Premium |
+| --- | --- | --- | --- |
+| Repeatedly dissed, close to breaking down | 1 / 2 / 0 / 4 | First question challenges the rescue attempt; calming phrases add confidence and reduce discomfort. Acceptance requires confidence ≥10 as well as a pass. | ¥8 |
+| Return with evidence for a specific decision | 0 / 0 / 0 / 1 | First question requests an observation, comparison or test; reviewer favors substance. Acceptance requires substance ≥8 as well as a pass. | ¥12 |
+| A cited master failed this critic years ago | 0 / 1 / 0 / 3 | First question challenges the fictional master; citing master/mentor names adds 2 discomfort per scored answer. | ¥10 |
+| Ordinary stand-in presentation | 0 / 0 / 0 / 0 | Standard three-round acceptance rules. | ¥0 |
+
+## Club and survival random events
+
+After each settlement, unless the account closes, one event has a **45%** chance to appear. Eligible event types are equally likely, and at most one awaits resolution. Handle it before accepting another job; shopping and resting remain available. Choices display costs and consequences before selection.
+
+| Event | Unlock condition | Choices and consequences |
+| --- | --- | --- |
+| Someone else's delivered package | From start | Keep: +8 Tokens, −2 reputation, 30% chance of a blacklist at next job settlement. Return: +2 reputation. |
+| A peer snoops on your presentation | 2 cleared jobs | Report: 1 time, +5 reputation, ends courier relationship. Deal: ¥10, −2 reputation, unlocks delivery at no time cost (+¥5 per purchase), 20% blacklist risk next settlement. Ignore: no effect. |
+| Emergency rescue request | 2 cleared jobs | Help: 1 time, −10 hunger, +¥20, +3 reputation, +3 XP. Sell recording: +¥30, −3 reputation, 50% immediate blacklist. Decline: no effect. |
+| Senior-member recommendation | 4 cleared jobs | Portfolio: 1 time and 2 Tokens, +6 XP, +3 reputation. Buy recommendation: ¥35, +10 XP, −4 reputation. Postpone: no effect. |
+| Optional client mission | 2 cleared jobs; independent 40% chance per new offer | Clear with substance ≥8, confidence ≥12, or discomfort ≤10, according to the brief, to earn its bonus. |
 
 ## Three-round defense
 
@@ -137,9 +183,9 @@ Limitations:
 
 The intended share copy is:
 
-> 发现自己很擅长写学术废话，于是做了一个这样的小游戏，目前只有建筑包体可以体验，欢迎大家加入新的包体。
+> 发现自己很擅长写学术废话，于是做了一个这样的小游戏，从建筑评图接单开始，通关后解锁艺术和创业主题，欢迎大家加入新的包体。
 
-The final share card is drawn in the browser with the player's actual project title, verdict and scores. It is not a fixed sample image. Use **Download Share Card** on the result screen to export a PNG.
+The final share card is drawn in the browser with the player's actual project title, verdict, scores and full final normal defense. Its smaller defense text wraps all paragraphs, and canvas height grows to fit every line; neither title nor defense is truncated. It is not a fixed sample image. Use **Download Share Card** on the result screen to export a PNG.
 
 ## Visual assets
 
@@ -249,4 +295,6 @@ Install the Python `playwright` package and Chromium (or run `playwright install
 python -m unittest discover -s tests -v
 ```
 
-Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cover trigger conditions, word placement, timers, one-time scoring, seat changes, fictional names, mobile taps and the three-round game flow.
+Run `node tests/career.test.js` for the career economy and PRE contract checks.
+
+Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cover trigger conditions, word placement, timers, one-time scoring, seat changes, fictional names, mobile taps, the three-round game flow, career resume/reset, unlocked themes, PRE questions and complete multilingual share-card rendering.

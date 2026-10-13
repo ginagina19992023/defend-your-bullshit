@@ -40,6 +40,7 @@
     let tokens = [];
     let chaos = 0;
     let professorLeft = false;
+    let vocabulary = null;
 
     function stopTimer() { clearInterval(timer); timer = null; }
     function isPending() { return phase === "ready" || phase === "playing"; }
@@ -59,11 +60,12 @@
       if (Math.random() < 0.12) return "surprise";
       return null;
     }
-    function open(kind, professor, project, gradeAnswer, callback) {
+    function open(kind, professor, project, gradeAnswer, callback, options = {}) {
       if (isPending()) return;
       stopTimer();
       if (kind === "pressure") pressureTriggered = true;
       active = { kind, professor, project };
+      vocabulary = Array.isArray(options.vocabulary) ? options.vocabulary : null;
       grade = gradeAnswer;
       onResolve = callback;
       phase = "ready";
@@ -146,7 +148,7 @@
       paused = false;
       remaining = duration * 1000;
       deadline = performance.now() + remaining;
-      tokens = Object.entries(parts).flatMap(([type, terms]) => sample(terms, type === "concept" ? 4 : 3).map(text => ({ text, type }))).concat([
+      tokens = Object.entries(parts).flatMap(([type, terms]) => sample(type === "concept" && vocabulary ? vocabulary : terms, type === "concept" ? 4 : 3).map(text => ({ text, type }))).concat([
         { text: "我把长椅放到了屋顶上", type: "absurd", absurd: true },
         { text: "这让我想起某次失败的终评", type: "absurd", absurd: true },
         { text: "我们记录了三位使用者的停留时间", type: "proof" }

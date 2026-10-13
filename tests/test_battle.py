@@ -72,13 +72,21 @@ class BattleTests(unittest.TestCase):
           });
         ''')
         self.page.goto(self.url)
-        self.page.select_option('#aiProvider', 'local')
+        self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
 
     def tearDown(self):
         self.assertEqual(self.errors, [])
         self.context.close()
 
     def begin(self):
+        if self.page.locator('#career').is_visible():
+            if self.page.locator('#lifeEvent').is_visible():
+                self.page.locator('.life-choice[data-choice="return"], .life-choice[data-choice="ignore"], .life-choice[data-choice="decline"], .life-choice[data-choice="later"]').first.click()
+            if self.page.locator('#resumeJob').count():
+                self.page.click('#resumeJob')
+            else:
+                self.page.locator('.accept-job').first.click()
+        self.page.select_option('#aiProvider', 'local')
         self.page.click('#generate')
         self.page.click('#beginReview')
 
@@ -285,7 +293,7 @@ class BattleTests(unittest.TestCase):
         self.page.set_default_timeout(5000)
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.goto(self.url)
-        self.page.select_option('#aiProvider','local')
+        self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
         self.begin()
         self.page.evaluate('Math.random = () => 0')
         self.page.fill('#customAnswer','好')
@@ -297,6 +305,131 @@ class BattleTests(unittest.TestCase):
         self.page.tap('#battleSubmit')
         expect(self.page.locator('#nextRound')).to_be_enabled()
         self.assertIn('已填 4/4 槽',self.page.locator('#battleResponse').inner_text())
+
+
+    def test_career_resume_resources_and_blacklist_reset(self):
+        self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
+        self.page.reload()
+        self.page.screenshot(path='/tmp/dyb-club-desktop.png',full_page=True)
+        self.page.locator('.accept-job').first.click()
+        self.page.fill('#project','这份稿子必须保存')
+        self.page.click('#backToClub')
+        self.page.reload()
+        expect(self.page.locator('#resumeJob')).to_be_visible()
+        self.assertIn('Token 12',self.page.locator('#careerStrip').inner_text())
+        self.page.click('#resumeJob')
+        self.assertEqual(self.page.input_value('#project'),'这份稿子必须保存')
+        self.page.click('#backToClub')
+        for attempt in range(3):
+            if attempt:
+                self.page.locator('.accept-job').first.click()
+                self.page.click('#backToClub')
+            self.page.click('#abandonJob')
+            self.page.click('#abandonJob')
+        expect(self.page.locator('#accountClosed')).to_be_visible()
+        self.page.click('#resetCareer')
+        self.page.click('#resetCareer')
+        self.assertIn('Token 18',self.page.locator('#careerStrip').inner_text())
+        expect(self.page.locator('.accept-job').first).to_be_enabled()
+
+    def test_share_card_keeps_long_multilingual_defense(self):
+        layout=self.page.evaluate(r"""() => {
+            const defense=('这是完整的现场答辩。 Mixed English words must stay visible. 🐒\n').repeat(55)+'最后一句必须完整显示 END OF DEFENCE';
+            const canvas=document.getElementById('shareCard');
+            const draw=canvas.getContext('2d').fillText;
+            const painted=[];
+            canvas.getContext('2d').fillText=function(text,...args){painted.push(text);return draw.call(this,text,...args)};
+            const result=DYB_SHARE_CARD.draw(canvas,{project:'超长项目标题'.repeat(12),verdict:{title:'职业嘴替通关',passed:true},scores:{depth:15,confidence:12,substance:8,discomfort:6},critique:'教授说下一次带证据。'.repeat(12),defense,careerTitle:'资深嘴替',url:'defend-your-bullshit'});
+            return {...result,complete:result.defenseLines.join('').replace(/\s/g,'')===defense.replace(/\s/g,''),painted:result.defenseLines.every(line=>painted.includes(line)),png:canvas.toDataURL()};
+        }""")
+        self.assertTrue(layout['complete'])
+        self.assertTrue(layout['painted'])
+        self.assertEqual(layout['defenseFont'],20)
+        self.assertGreater(layout['height'],1350)
+        self.assertGreater(layout['footerY'],layout['defenseBottom'])
+        import base64
+        Path('/tmp/dyb-full-defense-card.png').write_bytes(base64.b64decode(layout['png'].split(',')[1]))
+
+    def test_pre_scenarios_and_unlocked_theme_reach_review(self):
+        self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
+        self.page.reload()
+        self.page.evaluate("""() => {
+            const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
+            saved.passes=4;saved.xp=45;saved.tier=2;saved.offers=[];
+            localStorage.setItem('dyb-career-v1',JSON.stringify(saved));
+        }""")
+        self.page.reload()
+        self.assertEqual(self.page.locator('.accept-job').count(),3)
+        self.page.locator('.accept-job').nth(1).click()
+        self.assertEqual(self.page.input_value('#pack'),'art')
+        self.page.select_option('#aiProvider','local')
+        self.page.click('#generate')
+        self.page.click('#beginReview')
+        expect(self.page.locator('#question')).to_be_visible()
+        self.assertTrue(self.page.locator('#question').inner_text())
+        self.page.evaluate("""() => {
+            const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
+            saved.active=null;saved.offers=[];saved.event=null;
+            localStorage.setItem('dyb-career-v1',JSON.stringify(saved));
+            Math.random=()=>0.3;
+        }""")
+        # Persistent reload creates a fresh board; then insert the required PRE in its first offer.
+        self.page.reload()
+        self.page.evaluate("""() => {
+            const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
+            saved.offers[0].scenario=DYB_CAREER.scenarios.find(s=>s.id==='evidence');
+            localStorage.setItem('dyb-career-v1',JSON.stringify(saved));
+        }""")
+        self.page.reload()
+        self.begin()
+        self.assertIn('依据',self.page.locator('#question').inner_text())
+        self.assertEqual(self.scores(),['0/8','0/8','0/4','1/15'])
+
+
+    def test_simple_history_decline_invitation_and_repeat_without_cost(self):
+        expect(self.page.locator('#setup')).to_be_visible()
+        self.assertFalse(self.page.locator('#careerStrip').is_visible())
+        self.begin()
+        for _ in range(3):
+            self.page.fill('#customAnswer','好')
+            self.page.click('#submitDefense')
+            self.page.click('#nextRound')
+        expect(self.page.locator('#careerInvitation')).to_be_visible()
+        self.page.click('#declineInvitation')
+        self.page.click('#restart')
+        self.page.click('#viewHistory')
+        expect(self.page.locator('#sessionHistory')).to_be_visible()
+        self.assertEqual(self.page.locator('#historyList details').count(),1)
+        self.page.locator('#historyList summary').click()
+        self.assertIn('ROUND 3',self.page.locator('#historyList').inner_text())
+        self.page.click('#historyBack')
+        self.begin()
+        self.assertEqual(self.scores(),['0/8','0/8','0/4','0/15'])
+        for _ in range(3):
+            self.page.fill('#customAnswer','好')
+            self.page.click('#submitDefense')
+            self.page.click('#nextRound')
+        self.assertFalse(self.page.locator('#careerInvitation').is_visible())
+        self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-play-v1')).history.length"),2)
+        self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-career-v1')).tokens"),18)
+        self.page.reload()
+        expect(self.page.locator('#setup')).to_be_visible()
+
+    def test_accept_invitation_and_switch_back_preserves_career(self):
+        self.begin()
+        for _ in range(3):
+            self.page.fill('#customAnswer','好')
+            self.page.click('#submitDefense')
+            self.page.click('#nextRound')
+        self.page.click('#acceptInvitation')
+        expect(self.page.locator('#career')).to_be_visible()
+        self.page.locator('.accept-job').first.click()
+        self.page.click('#backToClub')
+        self.page.click('#returnSimple')
+        expect(self.page.locator('#setup')).to_be_visible()
+        self.page.click('#enterCareer')
+        expect(self.page.locator('#resumeJob')).to_be_visible()
+        self.assertIn('Token 12',self.page.locator('#careerStrip').inner_text())
 
 
 if __name__ == '__main__':
