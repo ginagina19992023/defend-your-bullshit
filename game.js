@@ -124,7 +124,9 @@
   };
 
   function show(id) {
-    for (const x of ["career", "setup", "statement", "defense", "final", "sessionHistory"]) $(x).hidden = x !== id;
+    for (const x of ["career", "setup", "statement", "defense", "final", "sessionHistory", "welcome"]) $(x).hidden = x !== id;
+    $("helpToggle").hidden = id === "welcome";
+    $("optionalDock").hidden = id !== "setup";
     window.scrollTo?.(0, 0);
   }
 
@@ -679,6 +681,10 @@
   });
   $("historyBack").addEventListener("click",()=>show(historyReturn));
   syncMode();
-  if(professional())show("career");else openSimple();
+  $("startGame").addEventListener("click",()=>{if(professional()){careerUI.render();show("career")}else openSimple()});
+  $("helpToggle").addEventListener("click",()=>$("helpDialog").showModal());
+  $("optionalToggle").addEventListener("click",()=>$("optionalDialog").showModal());
+  document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.close).close()));
+  show("welcome");
 })();
 

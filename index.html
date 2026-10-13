@@ -61,23 +61,22 @@
       <div class="actions"><button id="resetCareer" class="outline" type="button">销号重开</button></div>
     </section>
 
-    <section id="setup" class="screen setup-screen" hidden>
-      <div class="hero-grid">
+    <section id="welcome" class="screen welcome-screen" hidden>
         <div class="cover image-cover" aria-label="DEFEND YOUR BULLSHIT game cover">
           <img src="./assets/review-wall-cover.png" alt="DEFEND YOUR BULLSHIT final review simulator collage cover">
           <h1 class="visually-hidden">DEFEND YOUR BULLSHIT.</h1>
         </div>
 
-        <div class="setup-panel">
-          <div class="actions"><button id="viewHistory" class="outline mini" type="button">我的每局历史</button><button id="enterCareer" class="outline mini" type="button" hidden>进入职业俱乐部</button></div>
-          <div id="jobBrief" class="job-brief"></div>
-          <button id="backToClub" class="outline mini" type="button">返回俱乐部 / 保留委托</button>
-          <p class="intro">一个荒谬项目。三轮教授质疑。你唯一的武器是学术语言。目标不是证明项目有用，而是让它看起来无法被轻易否定。</p>
+      <div class="welcome-copy"><p class="eyebrow">A FINAL REVIEW SIMULATOR</p><h1>项目很荒谬。<br>但你可以讲得很认真。</h1><p class="intro">三轮教授质疑，你唯一的武器是学术语言。把一个简单项目，讲到无法被轻易否定。</p><p>选择项目 → 生成概念 → 应付三轮评委。途中可能突然进入限时拼词 Battle。</p><p class="sub">每局独立计算，也能查看历史。完成首局后，可自行决定是否加入学术嘴替俱乐部。</p><button id="startGame" type="button">开始 / LET ME DEFEND</button></div>
+    </section>
+    <button id="helpToggle" class="corner-info" type="button" aria-label="查看玩法说明" aria-haspopup="dialog" hidden>i</button>
+    <div id="optionalDock" class="optional-dock" hidden><span class="optional-bubble">AI 反馈 / 教授包，按需设置。</span><button id="optionalToggle" type="button" class="outline" aria-haspopup="dialog">⚙ 可选设置</button></div>
+    <dialog id="helpDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="helpDialog" aria-label="关闭玩法说明">×</button><h2>上台之前，知道这些就够了。</h2>          <p class="intro">一个荒谬项目。三轮教授质疑。你唯一的武器是学术语言。目标不是证明项目有用，而是让它看起来无法被轻易否定。</p>
 
           <details class="howto" open>
             <summary>HOW TO PLAY / 怎么通关</summary>
             <ol>
-              <li>为当前客户输入项目，或随机抽取。委托主题与场景由俱乐部派单决定。</li>
+              <li>选择包体，输入项目或随机抽取。学术嘴替模式的委托主题由俱乐部派单决定。</li>
               <li>生成概念陈述，然后进入三轮答辩。</li>
               <li>每轮选择策略，或写自己的回答。自由输入会被本地规则检测关键词、证据、概念堆叠和回避程度。</li>
               <li>通关需要：Conceptual Depth >= 8，Academic Confidence >= 8，Actual Substance >= 4，并且 Committee Discomfort 保持在 4-15。</li>
@@ -98,6 +97,34 @@
             <p class="sub">评委名字由建筑大师名字拼贴并故意错拼，都是虚构角色。换席保留已有分数，新评委会带来新的偏好和问题。</p>
           </details>
 
+</dialog>
+    <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
+            <label for="aiProvider">OPTIONAL AI FEEDBACK</label>
+            <select id="aiProvider">
+              <option value="pollinations" selected>Free web AI / 微信可体验</option>
+              <option value="local">Local rules only / 最稳定</option>
+              <option value="ollama">Local Ollama / 本机模型</option>
+            </select>
+            <div class="model-row">
+              <label for="ollamaModel">OLLAMA MODEL</label>
+              <input id="ollamaModel" type="text" value="llama3.1" aria-label="Ollama model name">
+            </div>
+            <p class="sub">默认会尝试免 key 公共文本接口，让微信里也能有更随机的教授反馈。免费接口可能慢或失败，失败时自动回到本地规则引擎。</p>
+          </div>
+          <div class="ai-panel">
+            <label for="criticPackFile">IMPORT WEIRD CRITIC PACK / 导入教授包</label>
+            <input id="criticPackFile" type="file" accept="application/json,.json">
+            <p id="criticPackStatus" class="sub">可以本地导入奇葩教授包体 JSON 试玩。社区提交仍建议走 GitHub pull request，避免上传真实姓名或真实机构。</p>
+          </div>
+</dialog>
+
+    <section id="setup" class="screen setup-screen" hidden>
+      <div class="hero-grid">
+        <div class="setup-panel">
+          <div class="actions"><button id="viewHistory" class="outline mini" type="button">我的每局历史</button><button id="enterCareer" class="outline mini" type="button" hidden>进入职业俱乐部</button></div>
+          <div id="jobBrief" class="job-brief"></div>
+          <button id="backToClub" class="outline mini" type="button">返回俱乐部 / 保留委托</button>
+          <p class="eyebrow">SET YOUR REVIEW / 准备上台</p><h2>先挑一个你敢讲的项目。</h2>
           <div class="field-grid">
             <div>
               <label for="pack">01 / DISCIPLINE PACK</label>
@@ -116,29 +143,11 @@
 
           <label for="project">03 / YOUR ACTUAL PROJECT</label>
           <textarea id="project" placeholder="例如：把三块石头堆起来"></textarea>
-          <div class="ai-panel">
-            <label for="aiProvider">OPTIONAL AI FEEDBACK</label>
-            <select id="aiProvider">
-              <option value="pollinations" selected>Free web AI / 微信可体验</option>
-              <option value="local">Local rules only / 最稳定</option>
-              <option value="ollama">Local Ollama / 本机模型</option>
-            </select>
-            <div class="model-row">
-              <label for="ollamaModel">OLLAMA MODEL</label>
-              <input id="ollamaModel" type="text" value="llama3.1" aria-label="Ollama model name">
-            </div>
-            <p class="sub">默认会尝试免 key 公共文本接口，让微信里也能有更随机的教授反馈。免费接口可能慢或失败，失败时自动回到本地规则引擎。</p>
-          </div>
-          <div class="ai-panel">
-            <label for="criticPackFile">04 / IMPORT WEIRD CRITIC PACK</label>
-            <input id="criticPackFile" type="file" accept="application/json,.json">
-            <p id="criticPackStatus" class="sub">可以本地导入奇葩教授包体 JSON 试玩。社区提交仍建议走 GitHub pull request，避免上传真实姓名或真实机构。</p>
-          </div>
           <div class="actions compact">
             <button id="random" class="outline" type="button">随机抽一个项目</button>
             <button id="generate" type="button">GENERATE STATEMENT</button>
           </div>
-          <p class="sub">这是本地模板与规则引擎，不是实时 AI 生成。你可以输入客户的项目概念继续玩，但系统理解能力有限，会用可解释的关键词规则评分。</p>
+
         </div>
       </div>
     </section>

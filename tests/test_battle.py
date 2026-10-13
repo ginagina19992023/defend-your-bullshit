@@ -72,6 +72,7 @@ class BattleTests(unittest.TestCase):
           });
         ''')
         self.page.goto(self.url)
+        self.page.click('#startGame')
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
 
     def tearDown(self):
@@ -86,7 +87,7 @@ class BattleTests(unittest.TestCase):
                 self.page.click('#resumeJob')
             else:
                 self.page.locator('.accept-job').first.click()
-        self.page.select_option('#aiProvider', 'local')
+        self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
         self.page.click('#generate')
         self.page.click('#beginReview')
 
@@ -293,6 +294,7 @@ class BattleTests(unittest.TestCase):
         self.page.set_default_timeout(5000)
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.goto(self.url)
+        self.page.click('#startGame')
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
         self.begin()
         self.page.evaluate('Math.random = () => 0')
@@ -310,11 +312,13 @@ class BattleTests(unittest.TestCase):
     def test_career_resume_resources_and_blacklist_reset(self):
         self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
         self.page.reload()
+        self.page.click('#startGame')
         self.page.screenshot(path='/tmp/dyb-club-desktop.png',full_page=True)
         self.page.locator('.accept-job').first.click()
         self.page.fill('#project','这份稿子必须保存')
         self.page.click('#backToClub')
         self.page.reload()
+        self.page.click('#startGame')
         expect(self.page.locator('#resumeJob')).to_be_visible()
         self.assertIn('Token 12',self.page.locator('#careerStrip').inner_text())
         self.page.click('#resumeJob')
@@ -361,16 +365,18 @@ class BattleTests(unittest.TestCase):
     def test_pre_scenarios_and_unlocked_theme_reach_review(self):
         self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
         self.page.reload()
+        self.page.click('#startGame')
         self.page.evaluate("""() => {
             const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
             saved.passes=4;saved.xp=45;saved.tier=2;saved.offers=[];
             localStorage.setItem('dyb-career-v1',JSON.stringify(saved));
         }""")
         self.page.reload()
+        self.page.click('#startGame')
         self.assertEqual(self.page.locator('.accept-job').count(),3)
         self.page.locator('.accept-job').nth(1).click()
         self.assertEqual(self.page.input_value('#pack'),'art')
-        self.page.select_option('#aiProvider','local')
+        self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
         self.page.click('#generate')
         self.page.click('#beginReview')
         expect(self.page.locator('#question')).to_be_visible()
@@ -383,12 +389,14 @@ class BattleTests(unittest.TestCase):
         }""")
         # Persistent reload creates a fresh board; then insert the required PRE in its first offer.
         self.page.reload()
+        self.page.click('#startGame')
         self.page.evaluate("""() => {
             const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
             saved.offers[0].scenario=DYB_CAREER.scenarios.find(s=>s.id==='evidence');
             localStorage.setItem('dyb-career-v1',JSON.stringify(saved));
         }""")
         self.page.reload()
+        self.page.click('#startGame')
         self.begin()
         self.assertIn('依据',self.page.locator('#question').inner_text())
         self.assertEqual(self.scores(),['0/8','0/8','0/4','1/15'])
@@ -421,6 +429,7 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-play-v1')).history.length"),2)
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-career-v1')).tokens"),18)
         self.page.reload()
+        self.page.click('#startGame')
         expect(self.page.locator('#setup')).to_be_visible()
 
     def test_accept_invitation_and_switch_back_preserves_career(self):
@@ -438,6 +447,31 @@ class BattleTests(unittest.TestCase):
         self.page.click('#enterCareer')
         expect(self.page.locator('#resumeJob')).to_be_visible()
         self.assertIn('Token 12',self.page.locator('#careerStrip').inner_text())
+
+
+    def test_welcome_help_and_optional_corner_settings(self):
+        self.page.goto(self.url)
+        expect(self.page.locator('#welcome')).to_be_visible()
+        self.assertFalse(self.page.locator('#setup').is_visible())
+        self.page.click('#startGame')
+        expect(self.page.locator('#setup')).to_be_visible()
+        self.assertFalse(self.page.locator('#helpDialog').is_visible())
+        self.assertFalse(self.page.locator('#aiProvider').is_visible())
+        self.page.click('#helpToggle')
+        expect(self.page.locator('#helpDialog')).to_be_visible()
+        self.page.keyboard.press('Escape')
+        self.page.click('#optionalToggle')
+        expect(self.page.locator('#aiProvider')).to_be_visible()
+        self.page.select_option('#aiProvider','local')
+        self.page.keyboard.press('Escape')
+        self.page.click('#generate')
+        expect(self.page.locator('#statement')).to_be_visible()
+        self.assertFalse(self.page.locator('#optionalDock').is_visible())
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.page.goto(self.url)
+        self.page.click('#startGame')
+        self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > innerWidth'))
+        self.page.screenshot(path='/tmp/dyb-settings-mobile.png',full_page=True)
 
 
 if __name__ == '__main__':
