@@ -109,3 +109,55 @@ window.DYB_PACKS = {
     ]
   }
 };
+
+
+window.DYB_PACKS.architecture.strategies.push({
+  name: "替客户讲清楚", description: "概念与证据一起讲，给评委一个可以验证的下一步。",
+  answer: "这不是单纯的形式操作，而是通过材料、公众与使用者的路径建立具身经验。我们记录三位使用者的反馈，对比原型测试前后的停留时间。", style: "balanced"
+});
+window.DYB_PACKS.art = {
+  id: "art", name: "Art Pack / 当代艺术", practice: "艺术实践",
+  projects: ["在展厅放一个空相框", "把开幕致辞循环播放八小时", "让观众给一块石头写评价", "展出所有没有入选的作品标签", "把作品藏在撤展后的纸箱里"],
+  vocabulary: ["观看的政治", "主体性的悬置", "档案的缝隙", "参与式关系", "物质性", "制度性的空缺", "可见性", "作者的退场", "感知的再语境化", "多义性的张力"],
+  topics: [
+    { id: "experience", label: "观众与体验", keywords: ["观众", "观看", "参与", "感知", "体验", "身体", "停留", "使用者"], question: "观众实际经历了什么？" },
+    { id: "form", label: "媒介与形式", keywords: ["媒介", "形式", "材料", "声音", "图像", "装置", "边界", "尺度"], question: "为什么选择这个媒介？" },
+    { id: "power", label: "机构与公共性", keywords: ["机构", "公众", "公共", "权力", "作者", "劳动", "参与", "排除"], question: "谁被允许进入这件作品？" },
+    { id: "evidence", label: "过程与证据", keywords: ["记录", "测试", "访谈", "观察", "反馈", "对照", "验证", "原型", "实验", "数据"], question: "作品产生的变化在哪里？" },
+    { id: "memory", label: "档案与时间", keywords: ["档案", "时间", "历史", "记忆", "过去", "保留", "痕迹", "撤展"], question: "撤展后留下什么？" }
+  ],
+  professors: [
+    { name: "CURATOR OF ABSENCE", moodBias: "form", questions: [{ text: "作品不在场，为什么还需要占用展厅？", topic: "form" }, { text: "空相框和一个没布完的展有什么区别？", topic: "evidence" }] },
+    { name: "PARTICIPATION CRITIC", moodBias: "experience", questions: [{ text: "观众是在参与，还是在替你完成劳动？", topic: "power" }, { text: "不想参与的人还算观众吗？", topic: "experience" }] },
+    { name: "ARCHIVE INSPECTOR", moodBias: "memory", questions: [{ text: "你留下的档案能证明什么，而不只是证明你举办过展览？", topic: "evidence" }, { text: "撤展之后，这个过程会进入谁的记忆？", topic: "memory" }] }
+  ],
+  strategies: [
+    { name: "让过程成为作品", description: "回应观众行为，同时保留概念。", answer: "这不是单纯的形式展示，而是让公众与观众参与材料和观看的政治。我们记录观看路径与停留时间，对照原型测试和观众反馈，保留一个可观察的过程。", style: "balanced" },
+    { name: "作者退场", description: "把作品的缺席解释为方法。", answer: "我们删除作者的解释，把空缺和缺席交给公众。作者的退场并不是失败，而是主体性的悬置与制度性的空缺。", style: "erase" },
+    { name: "拿出观众反馈", description: "用展场观察回答质疑。", answer: "我们通过访谈和现场观察记录观众行动，测试不同材料的呈现方式，对照反馈后修改形式。", style: "evidence" },
+    { name: "把机构也放进作品", description: "让质疑指向策展制度。", answer: "这不是作品是否完整的问题，而是谁规定作者必须提供结论。我们追问机构的权力、可见性与观看的政治。", style: "deflect" }
+  ]
+};
+window.DYB_PACKS.startup = {
+  id: "startup", name: "Startup Pack / 产品创业", practice: "产品实验",
+  projects: ["给待办事项再加一层待办事项", "做一个提醒你关闭提醒的应用", "把普通表格包装成智能平台", "出售尚未被验证的效率承诺", "把排队改名为社区协作"],
+  vocabulary: ["增长飞轮", "网络效应", "价值闭环", "用户心智", "平台生态", "产品范式", "非线性过程", "需求的再语境化", "主体与客体的重组", "开放性"],
+  topics: [
+    { id: "experience", label: "用户与需求", keywords: ["用户", "使用者", "需求", "体验", "行为", "路径", "停留", "痛点"], question: "用户真正需要什么？" },
+    { id: "form", label: "产品与设计", keywords: ["产品", "功能", "界面", "形式", "流程", "结构", "设计", "边界"], question: "为什么必须是这个产品？" },
+    { id: "power", label: "平台与分配", keywords: ["平台", "公平", "公众", "权力", "劳动", "分配", "参与", "排除"], question: "谁获利，谁承担成本？" },
+    { id: "evidence", label: "验证与指标", keywords: ["测试", "数据", "观察", "访谈", "反馈", "对照", "验证", "原型", "实验", "记录", "测量", "样本"], question: "验证指标在哪里？" },
+    { id: "memory", label: "迭代与时间", keywords: ["时间", "历史", "过去", "迭代", "保留", "延续", "版本", "周期"], question: "此前迭代改变了什么？" }
+  ],
+  professors: [
+    { name: "GROWTH EVANGELIST", moodBias: "form", questions: [{ text: "为什么这不是一个普通表格？", topic: "form" }, { text: "你说网络效应，第一批用户从哪里来？", topic: "experience" }] },
+    { name: "METRIC INQUISITOR", moodBias: "evidence", questions: [{ text: "把增长故事先放下，能给我一个对照测试吗？", topic: "evidence" }, { text: "使用者留下来是因为有用，还是因为关不掉提醒？", topic: "experience" }] },
+    { name: "PLATFORM SKEPTIC", moodBias: "power", questions: [{ text: "你节省的时间，是不是变成了别人的无偿劳动？", topic: "power" }, { text: "上个版本的失败为什么在这份演示里消失了？", topic: "memory" }] }
+  ],
+  strategies: [
+    { name: "把闭环讲实一点", description: "从用户路径连接验证与概念。", answer: "这不是增加一个形式，而是围绕公众和使用者的需求建立价值闭环。我们记录用户路径与停留时间，通过原型测试、对照实验和反馈验证下一版产品。", style: "balanced" },
+    { name: "飞轮先飞起来", description: "用增长概念保护尚未成立的产品。", answer: "我们真正关注的不是功能，而是网络效应、增长飞轮与平台生态。这个非线性过程需要开放性，数据不能过早定义它。", style: "jargon" },
+    { name: "先承认指标不好看", description: "以失败记录换一点信任。", answer: "我承认目前还不确定。我们记录失败，观察用户反馈，对照测试过去两个版本，再决定保留哪些产品功能。", style: "honest" },
+    { name: "要求一个小实验", description: "用证据回应投资质疑。", answer: "通过原型测试记录用户行为，测量停留时间，对照不同流程的反馈与数据，验证需求是否存在。", style: "evidence" }
+  ]
+};
