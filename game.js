@@ -193,7 +193,20 @@
     const second = "在这一过程中，" + project + "不再仅仅是一项物理动作，而逐渐被转译为一种围绕" + b + "展开的开放系统。材料、时间与参与者的介入共同塑造了作品中不断变化的意义。";
     const third = "我们特别关注过程而非结果：随着形式被重复、修正和重新感知，原本稳定的空间界线变得难以确定。由此，" + c + "并非附着于形式之上的解释，而成为设计发生的条件。";
     const final = "最终，真正需要讨论的并非项目是否完成，而是我们为什么仍旧假设空间必须被完成。作品试图将这个无法被轻易解决的问题留给每一个参与者。";
-    state.statement = [first, second, ...(intensity >= 2 ? [third] : []), ...(intensity >= 3 ? [final] : [])].join("\n\n");
+    // Change the argument itself, rather than swapping a few nouns in one template.
+    const variants = [
+      [first, second, third, final],
+      ["与其把「" + project + "」理解成一个需要被证明有用的方案，我们更愿意将它作为研究「" + a + "」的切入口。它的价值来自问题如何被提出，而非答案如何被包装。",
+       "方法上，我们从参与者的实际行动出发，记录材料、时间与反馈的变化，再用「" + b + "」重新组织这些观察。每一次偏离预期的使用，都可能修正项目的前提。",
+       "因此，「" + c + "」不是最终结论，而是一组可以被比较和检验的假设。我们希望通过小尺度试验，让抽象的立场留下具体的痕迹。",
+       "项目的完成并不意味着讨论终止。它更像一份可继续修改的提案，邀请参与者共同决定下一步。"],
+      ["「" + project + "」看似只是一个简单决定，却暴露了我们对「" + a + "」的默认理解。本项目从这个矛盾开始，尝试让习以为常的秩序重新成为问题。",
+       "我们把「" + b + "」转化为可被体验的情境，而非停留在概念描述。通过调整介入的尺度与顺序，项目让不同参与者对同一件事产生不同判断。",
+       "这里的关键不在于形式是否独特，而在于「" + c + "」如何改变行动的可能性。设计必须允许质疑、误读与重新使用，这些反馈构成它持续发展的依据。",
+       "最终，我们保留的不是一个封闭答案，而是一种讨论机制：让项目在不断被回应的过程中获得新的意义。"]
+    ];
+    state.statementVariant = ((state.statementVariant ?? -1) + 1) % variants.length;
+    state.statement = variants[state.statementVariant].slice(0, intensity + 1).join("\n\n");
     $("generated").textContent = state.statement;
     show("statement");
   }
