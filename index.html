@@ -101,15 +101,15 @@
     <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
             <label for="aiProvider">OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
-              <option value="pollinations" selected>Free web AI / 微信可体验</option>
-              <option value="local">Local rules only / 最稳定</option>
+              <option value="pollinations">Free web AI / 微信可体验</option>
+              <option value="local" selected>Local rules only / 最稳定</option>
               <option value="ollama">Local Ollama / 本机模型</option>
             </select>
             <div class="model-row">
               <label for="ollamaModel">OLLAMA MODEL</label>
               <input id="ollamaModel" type="text" value="llama3.1" aria-label="Ollama model name">
             </div>
-            <p class="sub">默认会尝试免 key 公共文本接口，让微信里也能有更随机的教授反馈。免费接口可能慢或失败，失败时自动回到本地规则引擎。</p>
+            <p class="sub">默认使用本地反馈，围绕你的回答与当前问题。可选 AI 只补充有明确引用的批评；失败或跑题时使用本地反馈。</p>
           </div>
           <div class="ai-panel">
             <label for="criticPackFile">IMPORT WEIRD CRITIC PACK / 导入教授包</label>
@@ -209,7 +209,7 @@
         </div>
         <h2 id="battleTitle" tabindex="-1">现实 Battle</h2>
         <p id="battleReason"></p>
-        <p id="battleIntro" class="sub">评委突然打断答辩。点击开始后，你有 20 秒用磁条拼出答辩：拖进四个槽，或点击词条再点击槽位。超时会自动结算当前拼贴。</p>
+        <p id="battleIntro" class="sub">评委突然打断答辩。点击开始后，你有 20 秒回应当前问题：可以拼词、补充文字，或直接输入。评委看回答里的要点，不数填对了几个槽。超时按最终回答结算。</p>
         <div id="battleLive" hidden>
           <div class="battle-clock">
             <span>拼贴倒计时 <strong id="battleTimer" role="timer">20 秒</strong></span>
@@ -228,13 +228,15 @@
             <strong id="chaosMeter">CHAOS 0</strong>
           </div>
           <div id="wordBank" class="word-bank" aria-label="磁条词库"></div>
+          <div class="battle-writing"><label for="battleInputMode">也可以自己说</label><select id="battleInputMode"><option value="collage">拼词 + 自己补充</option><option value="free">直接回答 / 只提交输入内容</option></select><label for="battleDraft">你想补充的概念、依据或解释</label><textarea id="battleDraft" rows="3" placeholder="例如：我们观察了三位使用者，再比较改动前后的停留时间。"></textarea><button id="battleVoice" class="outline mini" type="button">语音输入</button><p id="battleVoiceStatus" class="sub" role="status"></p></div>
           <p class="battle-sentence" id="battleSentence" aria-live="polite">你的答辩句子会出现在这里。</p>
         </div>
         <p id="battleResponse" class="battle-response" role="status" aria-live="polite"></p>
         <p id="battleScoreChange" class="scores"></p>
-        <div class="actions">
+        <div id="battleActions" class="actions battle-actions">
+          <span id="battleDockTime" class="battle-dock-time"></span><button id="battleDockPause" class="outline mini" type="button">暂停</button>
           <button id="battleStart" type="button">开始限时拼贴</button>
-          <button id="battleSubmit" type="button" hidden>提交拼贴答辩</button>
+          <button id="battleSubmit" type="button" hidden>提交现场回答</button>
         </div>
       </section>
 

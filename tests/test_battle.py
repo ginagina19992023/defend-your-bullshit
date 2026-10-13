@@ -209,7 +209,7 @@ class BattleTests(unittest.TestCase):
         self.page.clock.run_for(17100)
         self.assertEqual(self.page.locator('#battleTimer').inner_text(), '时间到')
         after = [int(value.split('/')[0]) for value in self.scores()]
-        self.assertEqual(after, [before[0],max(0,before[1]-2),before[2]-1,before[3]+2])
+        self.assertEqual(after, [before[0],max(0,before[1]-1),before[2],before[3]+1])
         expect(self.page.locator('#nextRound')).to_be_enabled()
         expect(self.page.locator('.chip').first).to_be_disabled()
         self.page.click('#nextRound')
@@ -232,11 +232,11 @@ class BattleTests(unittest.TestCase):
         expect(self.page.locator('.slot[data-slot="opening"]')).to_have_class('slot filled good')
         first.click()
         self.page.click('.slot[data-slot="move"]')
-        self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 2')
+        self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 0')
         for key in ['concept','proof']:
             self.page.locator('.chip[data-type="absurd"]').first.click()
             self.page.click(f'.slot[data-slot="{key}"]')
-        self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 10')
+        self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 8')
         self.assertIn('暂时离席', self.page.locator('#improvStatus').inner_text())
         self.fill_collage()
         self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 0')
@@ -306,7 +306,7 @@ class BattleTests(unittest.TestCase):
         self.page.screenshot(path='/tmp/dyb-collage-mobile.png',full_page=True)
         self.page.tap('#battleSubmit')
         expect(self.page.locator('#nextRound')).to_be_enabled()
-        self.assertIn('已填 4/4 槽',self.page.locator('#battleResponse').inner_text())
+        self.assertIn('回应问题、概念与证据',self.page.locator('#battleResponse').inner_text())
 
 
     def test_career_resume_resources_and_blacklist_reset(self):
@@ -472,6 +472,64 @@ class BattleTests(unittest.TestCase):
         self.page.click('#startGame')
         self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > innerWidth'))
         self.page.screenshot(path='/tmp/dyb-settings-mobile.png',full_page=True)
+
+
+    def test_battle_free_answer_grades_content_and_submit_stays_in_view(self):
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.begin()
+        self.page.evaluate("""() => {
+          window.battleResults=[];
+          testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:2,confidence:1,substance:3,discomfort:0},reason:'证据：'+answer}),result=>battleResults.push(result));
+        }""")
+        self.page.click('#battleStart')
+        self.page.select_option('#battleInputMode','free')
+        self.page.fill('#battleDraft','通过观察三位使用者，对比改动前后的停留时间。')
+        self.page.locator('.chip[data-type="opening"]').first.click()
+        self.page.click('.slot[data-slot="proof"]')
+        rect=self.page.locator('#battleSubmit').bounding_box()
+        self.assertLessEqual(rect['y']+rect['height'],844)
+        self.assertGreaterEqual(rect['y'],0)
+        self.page.click('#battleSubmit')
+        result=self.page.evaluate('battleResults[0]')
+        self.assertEqual(result['answer'],'通过观察三位使用者，对比改动前后的停留时间。')
+        self.assertEqual(result['scores'],{'depth':2,'confidence':1,'substance':3,'discomfort':0})
+        self.assertNotIn('放对',result['response'])
+        self.page.evaluate("""() => testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:2,confidence:1,substance:3,discomfort:0},reason:'证据：'+answer}),result=>battleResults.push(result))""")
+        self.page.click('#battleStart')
+        self.fill_collage()
+        self.page.click('#battleSubmit')
+        self.assertEqual(self.page.evaluate('battleResults[1].scores'),result['scores'])
+
+    def test_unanchored_ai_poetry_falls_back_to_relevant_local_feedback(self):
+        self.page.route('https://text.pollinations.ai/**',lambda route:route.fulfill(status=200,body='若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。'))
+        self.begin()
+        self.page.locator('#aiProvider').evaluate("el=>el.value='pollinations'")
+        self.page.fill('#customAnswer','我们记录了使用者路径，并通过测试比较改动前后的时间。')
+        self.page.click('#submitDefense')
+        expect(self.page.locator('#feedback')).to_contain_text('你说「')
+        self.assertNotIn('剧烈航向',self.page.locator('#feedback').inner_text())
+
+
+    def test_voice_transcript_is_editable_and_late_results_are_ignored(self):
+        self.page.add_init_script("""window.SpeechRecognition=class {
+          constructor(){window.fakeVoice=this}
+          start(){} abort(){this.aborted=true}
+        }""")
+        self.page.reload()
+        self.page.click('#startGame')
+        self.begin()
+        self.page.evaluate("""() => testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:1,confidence:1,substance:1,discomfort:0},reason:answer}),result=>window.voiceResult=result)""")
+        self.page.click('#battleStart')
+        self.page.select_option('#battleInputMode','free')
+        self.page.click('#battleVoice')
+        self.page.evaluate("fakeVoice.onresult({results:[[{transcript:'通过观察记录使用者路径'}]]})")
+        self.assertEqual(self.page.input_value('#battleDraft'),'通过观察记录使用者路径')
+        self.page.fill('#battleDraft','通过观察记录使用者路径，并对比测试结果')
+        self.page.click('#battleSubmit')
+        self.assertEqual(self.page.evaluate('voiceResult.answer'),'通过观察记录使用者路径，并对比测试结果')
+        self.assertTrue(self.page.evaluate('fakeVoice.aborted'))
+        self.page.evaluate("fakeVoice.onresult({results:[[{transcript:'晚到的语音'}]]})")
+        self.assertNotIn('晚到',self.page.input_value('#battleDraft'))
 
 
 if __name__ == '__main__':

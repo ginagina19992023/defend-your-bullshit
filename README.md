@@ -93,11 +93,11 @@ You can either choose a preset strategy, type your own defense, or face a surpri
 
 The existing magnetic-word collage is now a timed Battle that appears only when triggered, rather than staying visible throughout every critique. The original phrase bank and four slots (**Opening**, **Move**, **Concept**, **Proof / Chaos**) remain the core interaction.
 
-Click **Start Timed Collage** to begin a 20-second countdown. Drag a word tile into a slot, or tap/click a tile and then a slot. The professor reacts immediately to correct placements, misplaced tiles and absurd phrases. The assembled sentence is previewed below the tiles. Submit early, or let the timer automatically grade the current collage. Empty and incomplete boards receive penalties; a complete, correctly placed sentence can calm the committee. Topic relevance, jargon and evidence are still evaluated by the existing local rule engine, with smaller Battle bonuses.
+Click **Start Timed Collage** to begin 20 seconds. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
 
-The timer can be paused, and switching away from the page automatically pauses it. After settlement, the Battle score changes are applied once and the normal three-round defense resumes. The next critique stays locked while the Battle is pending. Triggered Battles use local feedback immediately, without waiting for optional AI.
+The professor evaluates the final text against the current question: recognized topic concepts, concrete methods and evidence. Slot count, tile type compatibility and timeout do not award or subtract points. An empty answer loses confidence; nonempty Battle grading has no random sympathy bonus. Score changes and recognized expressions are shown explicitly. Local keyword scoring remains heuristic. Absurd tiles can produce a temporary walkout animation, but placement chaos does not change settlement scores.
 
-Chaos is calculated from current placements: each misplaced ordinary tile adds 2, and each absurd tile adds 4. Replacing a tile updates chaos instead of accumulating unlimited points. At chaos 7 or above, the professor briefly leaves to get water; this is a temporary reaction, not a permanent seat replacement.
+While playing, a fixed bottom bar keeps time, pause/resume and submission reachable on mobile and desktop. The timer starts only on Start; visibility loss pauses it. Submission or timeout resolves exactly once. Free input mode ignores all tiles; collage mode appends the editable text to tiles in slot order.
 
 ## Fictional critic names and seat changes
 
@@ -115,8 +115,8 @@ Before each round's question, a seat-change event may replace its scheduled crit
 | Meeting | Before round 2 or 3 | 12% | Scheduled professor leaves for a meeting; a different critic takes the seat |
 | Clocking off | Before round 3 | 15% | Professor leaves work; a replacement takes over |
 | Visiting critic | Before any round | 8%; raised to 18% when accumulated depth >= 8 | An invited critic takes the scheduled seat |
-| Absurd sympathy bonus | During normal defense and nonempty Battle scoring | 38% | Adds a small random bonus with an absurd local explanation |
-| Brief walkout | While placing Battle tiles | Chaos reaches 7; deterministic | Professor temporarily gets water; modifies Battle settlement |
+| Absurd sympathy bonus | During normal defense only | 38% | Adds a small random bonus with an absurd local explanation |
+| Brief walkout | While placing Battle tiles | Chaos reaches 7; deterministic | Professor temporarily gets water; visual reaction only |
 
 There is at most one Battle per round and one seat change at each round opening. Seat changes use one weighted draw: meeting, clocking off and visiting probabilities occupy separate intervals. The total seat-change chance is 8% in round 1; 20% or 30% in round 2; and 35% or 45% in round 3, depending on accumulated depth. Battle chances are sequential conditional checks: the 12% surprise chance applies only if the previous checks did not trigger. The guaranteed pressure Battle and collage name deck reset for each new run.
 
@@ -148,7 +148,9 @@ Practical strategy:
 
 ## Optional AI feedback
 
-The default **Free web AI** mode calls a public no-key text generation endpoint from the browser. It is useful for making WeChat playthroughs feel less repetitive, but it has limitations:
+Local feedback is the default and quotes the answer with the rule explanation. Optional AI must quote the actual answer opening and stay within 400 characters; unanchored, error-page or empty responses fall back to local feedback. The prompt forbids unrelated invented imagery.
+
+The optional **Free web AI** mode calls a public no-key text generation endpoint from the browser. It is useful for making WeChat playthroughs feel less repetitive, but it has limitations:
 
 - it can be slow,
 - it can fail,
@@ -197,7 +199,7 @@ The cover artwork lives at `assets/review-wall-cover.png` and is used on the sta
 
 The site is responsive. Battle tiles support both drag-and-drop and tap-a-tile / tap-a-slot input. The layout collapses into a single column, the share card scales to the screen width, and the exported PNG keeps a high-resolution canvas size.
 
-WeChat users can play through the public GitHub Pages URL. The free AI endpoint is attempted directly from the browser; if WeChat blocks or delays it, gameplay still continues with local rules.
+WeChat users can play through the public GitHub Pages URL. When selected, the free AI endpoint is attempted directly from the browser; if WeChat blocks or delays it, gameplay still continues with local rules.
 
 ## Community discipline packs
 

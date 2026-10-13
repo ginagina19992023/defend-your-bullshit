@@ -41,12 +41,16 @@
     let chaos = 0;
     let professorLeft = false;
     let vocabulary = null;
+    let recognition = null;
+    const stopVoice = () => { if(recognition){recognition.abort();recognition=null} };
 
     function stopTimer() { clearInterval(timer); timer = null; }
     function isPending() { return phase === "ready" || phase === "playing"; }
     function hide() { if (!isPending()) $("battle").hidden = true; }
     function reset() {
       stopTimer();
+      stopVoice();
+      $("battleActions").classList.remove("is-live");
       pressureTriggered = false;
       phase = "idle";
       active = null;
@@ -81,6 +85,12 @@
       $("battleStart").hidden = false;
       $("battleSubmit").hidden = true;
       $("battleResponse").textContent = "";
+      $("battleDraft").value="";
+      $("battleInputMode").value="collage";
+      $("battleDraft").disabled=false;
+      $("battleInputMode").disabled=false;
+      $("battleVoice").disabled=false;
+      $("battleVoiceStatus").textContent=voiceSupported?"语音会转成文字，可修改后提交。":"当前浏览器不支持直接录音，可用手机键盘的麦克风输入。";
       $("battleScoreChange").textContent = "";
       $("battle").scrollIntoView({ block: "start" });
       $("battleStart").focus({ preventScroll: true });
@@ -91,7 +101,10 @@
       return true;
     }
     function showTime() {
-      $("battleTimer").textContent = Math.max(0, Math.ceil(remaining / 1000)) + " 秒" + (paused ? " / 已暂停" : "");
+      const label = Math.max(0, Math.ceil(remaining / 1000)) + " 秒" + (paused ? " / 已暂停" : "");
+      $("battleTimer").textContent = label;
+      $("battleDockTime").textContent=label;
+      $("battleDockPause").textContent=paused?"继续":"暂停";
     }
     function tick() {
       if (phase !== "playing" || paused) return;
@@ -99,7 +112,9 @@
       showTime();
       if (remaining <= 0) finish(true);
     }
-    function sentence() { return order.map(key => slots[key]?.text).filter(Boolean).join(" "); }
+    function collage() { return order.map(key => slots[key]?.text).filter(Boolean).join(" "); }
+    function sentence() { const draft=$("battleDraft").value.trim();return $("battleInputMode").value==="free"?draft:[collage(),draft].filter(Boolean).join(" "); }
+    function preview() { $("battleSentence").textContent=sentence()||"拼词、补充文字，或直接回答评委。"; }
     function updateSelection() {
       $("wordBank").querySelectorAll("button").forEach((button, i) => {
         button.classList.toggle("selected", i === selected);
@@ -112,14 +127,14 @@
       const token = tokens[index];
       slots[slot] = token;
       const element = $("slotBoard").querySelector('[data-slot="' + slot + '"]');
-      element.className = "slot filled " + (token.absurd ? "absurd" : compatible(slot, token) ? "good" : "wrong");
+      element.className = "slot filled " + (token.absurd ? "absurd" : "good");
       element.querySelector("strong").textContent = token.text;
       element.setAttribute("aria-label", slot.toUpperCase() + ": " + token.text);
       // Current placements determine chaos; replacing a tile cannot farm points.
-      chaos = Object.entries(slots).reduce((sum, [key, item]) => sum + (item.absurd ? 4 : compatible(key, item) ? 0 : 2), 0);
+      chaos = Object.entries(slots).reduce((sum, [key, item]) => sum + (item.absurd ? 4 : 0), 0);
       selected = null;
       updateSelection();
-      $("battleSentence").textContent = sentence();
+      preview();
       const face = $("battleFace");
       face.classList.remove("flinch", "leave");
       if (token.absurd) {
@@ -129,10 +144,10 @@
       } else if (!compatible(slot, token)) {
         face.textContent = ">:|";
         face.classList.add("flinch");
-        $("improvStatus").textContent = "评委眯起眼睛：这个词放错了位置，但也许你还能解释。";
+        $("improvStatus").textContent = "评委眯起眼睛：这句衔接有点跳跃。能说明它和项目有什么关系吗？";
       } else {
         face.textContent = ":-)";
-        $("improvStatus").textContent = "评委微微点头：这个词放得像是有预谋。";
+        $("improvStatus").textContent = "评委微微点头：我记下了这句话，还要听它回应了什么。";
       }
       if (chaos >= 7) professorLeft = true;
       if (professorLeft) {
@@ -156,6 +171,8 @@
       $("battleStart").hidden = true;
       $("battleSubmit").hidden = false;
       $("battleSubmit").disabled = false;
+      $("battleActions").classList.add("is-live");
+      $("battleDockPause").disabled=false;
       $("battleIntro").hidden = true;
       $("battleLive").hidden = false;
       $("battleQuestion").textContent = encounters[active.kind].question;
@@ -213,21 +230,20 @@
       if (phase !== "playing") return;
       phase = "complete";
       stopTimer();
+      stopVoice();
+      $("battleActions").classList.remove("is-live");
       const answer = sentence();
       const grading = answer ? grade(answer) : { scores: { depth: 0, confidence: 0, substance: 0, discomfort: 0 }, reason: "没有拼出答辩句子。" };
       const scores = { ...grading.scores };
-      const filled = Object.keys(slots).length;
-      const correct = Object.entries(slots).filter(([key, token]) => compatible(key, token) && !token.absurd).length;
-      if (filled < 4) { scores.confidence -= 1; scores.substance -= 1; scores.discomfort += 1; }
-      else if (correct === 4) { scores.confidence += 1; scores.discomfort -= 2; }
-      if (chaos >= 4) scores.discomfort += Math.min(4, Math.floor(chaos / 2));
-      if (professorLeft) { scores.confidence += 1; scores.discomfort += 2; scores.substance -= 1; }
-      if (timedOut) { scores.confidence -= 1; scores.discomfort += 1; }
-      const response = (timedOut ? "时间到。评委按当前拼贴结算。" : "拼贴答辩已提交。") +
-        " 已填 " + filled + "/4 槽；放对 " + correct + "/4；CHAOS " + chaos + "。\n" + grading.reason;
+      if(!answer){scores.confidence=-1;scores.discomfort=1;}
+      const response = (timedOut ? "时间到，按你的最终回答结算。" : "现场回答已提交。") + "\n" + grading.reason + "\n评委按回应问题、概念与证据评分，磁条位置不计分。";
       const result = { kind: active.kind, scores, answer, timedOut, chaos, professorLeft, response };
       $("battleTimer").textContent = timedOut ? "时间到" : "已提交";
       $("battlePause").disabled = true;
+      $("battleDockPause").disabled=true;
+      $("battleDraft").disabled=true;
+      $("battleInputMode").disabled=true;
+      $("battleVoice").disabled=true;
       $("battleSubmit").disabled = true;
       $("wordBank").querySelectorAll("button").forEach(button => { button.disabled = true; button.draggable = false; });
       $("slotBoard").querySelectorAll("button").forEach(button => { button.disabled = true; });
@@ -261,6 +277,21 @@
       $("battlePause").setAttribute("aria-pressed", "false");
       showTime();
       timer = setInterval(tick, 100);
+    });
+    $("battleDraft").addEventListener("input",()=>{if(canPlay())preview()});
+    $("battleInputMode").addEventListener("change",()=>{if(canPlay())preview()});
+    $("battleDockPause").addEventListener("click",()=>$("battlePause").click());
+    const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const voiceSupported=Boolean(Speech);
+    $("battleVoice").addEventListener("click",()=>{
+      if(!canPlay())return;
+      if(!Speech){$("battleDraft").focus();return;}
+      if(recognition){stopVoice();return;}
+      const session=new Speech();recognition=session;session.lang="zh-CN";session.interimResults=false;
+      session.onresult=event=>{if(!canPlay())return;const transcript=Array.from(event.results).map(result=>result[0].transcript).join(" ");$("battleDraft").value=[$("battleDraft").value,transcript].filter(Boolean).join(" ");preview();};
+      session.onerror=()=>{$("battleVoiceStatus").textContent="未能识别语音，可直接打字或用键盘麦克风。";};
+      session.onend=()=>{if(recognition===session)recognition=null;$("battleVoice").textContent="语音输入";};
+      try{session.start();$("battleVoice").textContent="停止语音";$("battleVoiceStatus").textContent="正在听，识别结果会放入文字框。";}catch(_){recognition=null;$("battleVoiceStatus").textContent="无法启动语音，请使用键盘麦克风。";}
     });
     document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });
     return { pickTrigger, open, reset, hide, isPending };

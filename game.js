@@ -281,7 +281,7 @@
     const steadied = scenario?.id === "stress" && /理解|先稳|慢慢|一步|先记录|先测试/.test(answer);
     if (steadied) { confidence += 1; discomfort -= 1; }
 
-    const lucky = Math.random() < 0.38;
+    const lucky = style !== "battle" && Math.random() < 0.38;
     if (lucky) {
       depth += 1;
       confidence += 1;
@@ -299,6 +299,8 @@
     if (!tags.length) tags.push("weak");
 
     const reasons = [];
+    const heard = [...new Set([...a.topic.keywords, ...pack().vocabulary, ...pack().topics.find(t=>t.id==="evidence").keywords])].filter(term=>answer.includes(term)).slice(0,6);
+    if(heard.length) reasons.push("评委听到：" + heard.map(term=>"「"+term+"」").join("、"));
     reasons.push(a.onTopic ? "回答触及「" + a.topic.label + "」" : "没有正面回应「" + a.topic.label + "」");
     if (a.evidence > 0) reasons.push("出现了测试、记录或验证线索");
     if (a.inflated >= 3) reasons.push("概念密度偏高");
@@ -416,7 +418,7 @@
       "教授问题：" + state.question.text,
       "玩家回答：" + answer,
       "规则判定：" + grading.tags.join(", ") + "；" + grading.reason,
-      "可以加入一个随机荒谬理由，例如想起自己失败的毕设、屋顶长椅、展览海报、沉默被误读等。",
+      "必须逐字引用玩家回答开头的这段原文：「" + answer.slice(0,16) + "」。指出它如何回应教授问题、哪里缺少证据。不得编造海报、长椅等无关场景，不写诗，不用空洞隐喻。",
       "只输出反馈正文。"
     ].join("\n");
   }
@@ -450,8 +452,8 @@
     if (provider === "local") return "";
     const prompt = aiPrompt(answer, grading);
     try {
-      if (provider === "ollama") return await fetchOllama(prompt);
-      return await fetchPollinations(prompt);
+      const result = provider === "ollama" ? await fetchOllama(prompt) : await fetchPollinations(prompt);
+      return answer.length >= 6 && result.length <= 400 && result.includes(answer.slice(0,16)) && !/<html|<!doctype|unauthorized|api key/i.test(result) ? result : "";
     } catch (error) {
       console.warn("AI feedback failed, falling back to local rules:", error);
       return "";
@@ -469,7 +471,7 @@
     $("submitDefense").disabled = true;
     $("submitDefense").textContent = "PROFESSOR IS THINKING...";
     const mainTag = grading.tags[0];
-    const localResponse = random(contradictionPool[mainTag]);
+    const localResponse = "你说「" + answer.slice(0,36) + (answer.length>36?"…":"") + "」。" + grading.reason + "。\n" + random(contradictionPool[mainTag]);
     const trigger = battle.pickTrigger(state.scores, grading);
     const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
     const response = aiResponse || localResponse;
@@ -484,7 +486,7 @@
     $("nextRound").disabled = Boolean(trigger);
     if (trigger) {
       battle.open(trigger, state.professor.name, state.project, answer => {
-        const grading = evaluate(answer, state.question, "manual");
+        const grading = evaluate(answer, state.question, "battle");
         return {
           scores: {
             depth: Math.min(3, Math.floor(grading.depth / 2)),
