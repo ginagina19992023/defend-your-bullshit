@@ -635,7 +635,7 @@
     $("careerStrip").hidden=!professional();
     $("backToClub").hidden=!professional();
     $("jobBrief").hidden=!professional();
-    $("modeLabel").textContent=professional()?"职业嘴替 · 俱乐部生涯":"简易单局 · 上台就开讲";
+    $("modeLabel").textContent=professional()?"学术嘴替 · 俱乐部生涯":"简易单局 · 上台就开讲";
     $("packHint").textContent=professional()?"通过累计通关解锁新主题，在俱乐部选择对应委托。":"直接选择主题，每局分数独立计算。";
     $("enterCareer").hidden=play.snapshot().invitation!=="accepted";
   }

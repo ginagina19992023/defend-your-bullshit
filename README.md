@@ -1,6 +1,6 @@
 # DEFEND YOUR BULLSHIT
 
-A satirical presentation-stand-in career game: join the 职业嘴替 club, take client briefs, survive reviews, and keep your membership while managing food, time and in-game Tokens.
+A satirical presentation-stand-in career game: join the 学术嘴替 club, take client briefs, survive reviews, and keep your membership while managing food, time and in-game Tokens.
 
 Live site:
 
@@ -36,7 +36,7 @@ Simple Mode is the default for new players, including WeChat visitors. All three
 
 Every completed game saves its project, verdict, four scores and three answers/critic responses in local history. The history list distinguishes Simple and Career games. The first completed game produces one invitation, regardless of its outcome. Declining permanently dismisses it; future simple games continue freely. Accepting opens the club with a fresh career inventory. Career members can return to Simple Mode and later re-enter the club without losing career state. The career economy only changes while playing Career Mode. Both history and career are stored in the current browser; private/blocked storage supports only the current session.
 
-## 职业嘴替 / Career loop
+## 学术嘴替 / Career loop
 
 Career state is saved locally in the browser. A reload retains resources, unlocked themes, events and the accepted job. Resume starts its review again at round 1 without charging preparation twice; individual round progress is not saved. Blocked browser storage permits a temporary session.
 

@@ -75,7 +75,7 @@
     ctx.save(); ctx.translate(856, 204); ctx.rotate(-0.09); ctx.strokeStyle = red; ctx.lineWidth = 4; ctx.strokeRect(-114,-45,228,100);
     text(data.verdict.passed ? "PASSED" : "FAILED", '900 43px Arial,sans-serif', -94, 7, red);
     text("WITH QUESTIONS", '700 15px Consolas,monospace', -86, 34, red); ctx.restore();
-    tape("PROJECT / " + (data.careerTitle || "职业嘴替"), projectY);
+    tape("PROJECT / " + (data.careerTitle || "学术嘴替"), projectY);
     paragraph(project, projectY + 70);
     box(rankY, rank.height + 70);
     text("ACADEMIC RANK AWARDED", '700 19px Consolas,monospace', padding + 24, rankY + 30, red);

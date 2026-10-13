@@ -339,7 +339,7 @@ class BattleTests(unittest.TestCase):
             const draw=canvas.getContext('2d').fillText;
             const painted=[];
             canvas.getContext('2d').fillText=function(text,...args){painted.push(text);return draw.call(this,text,...args)};
-            const result=DYB_SHARE_CARD.draw(canvas,{project:'超长项目标题'.repeat(12),verdict:{title:'职业嘴替通关',passed:true},scores:{depth:15,confidence:12,substance:8,discomfort:6},critique:'教授说下一次带证据。'.repeat(12),defense,careerTitle:'资深嘴替',url:'defend-your-bullshit'});
+            const result=DYB_SHARE_CARD.draw(canvas,{project:'超长项目标题'.repeat(12),verdict:{title:'学术嘴替通关',passed:true},scores:{depth:15,confidence:12,substance:8,discomfort:6},critique:'教授说下一次带证据。'.repeat(12),defense,careerTitle:'资深嘴替',url:'defend-your-bullshit'});
             return {...result,complete:result.defenseLines.join('').replace(/\s/g,'')===defense.replace(/\s/g,''),painted:result.defenseLines.every(line=>painted.includes(line)),png:canvas.toDataURL()};
         }""")
         self.assertTrue(layout['complete'])

@@ -93,7 +93,7 @@
       }
       $("careerLog").replaceChildren();
       s.log.forEach(text => $("careerLog").append(element("li",text)));
-      if (!s.log.length) $("careerLog").append(element("li","加入嘴替俱乐部。先接一单，再考虑体面。"));
+      if (!s.log.length) $("careerLog").append(element("li","加入学术嘴替俱乐部。先接一单，再考虑体面。"));
       if (!$("careerMessage").textContent && !s.active && !s.closed) $("careerMessage").textContent = s.event ? "先处理门口的事件，才能接新单。" : "准备好现金、存粮和话术后，挑一份委托。";
     }
     const controls = {
