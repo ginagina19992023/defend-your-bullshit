@@ -347,17 +347,32 @@
   function passStatus() {
     const s = state.scores;
     const items = [
-      ["Depth >= 8", s.depth >= 8, s.depth + "/8"],
-      ["Confidence >= 8", s.confidence >= 8, s.confidence + "/8"],
-      ["Substance >= 4", s.substance >= 4, s.substance + "/4"],
-      ["Discomfort 4-15", s.discomfort >= 4 && s.discomfort <= 15, s.discomfort + "/15"]
+      {short:"概",label:"概念深度 / Conceptual Depth",score:s.depth,goal:8,max:8,ok:s.depth>=8,hint:"目标至少 8 分"},
+      {short:"自",label:"学术自信 / Academic Confidence",score:s.confidence,goal:8,max:8,ok:s.confidence>=8,hint:"目标至少 8 分"},
+      {short:"实",label:"实际内容 / Actual Substance",score:s.substance,goal:4,max:4,ok:s.substance>=4,hint:"目标至少 4 分"},
+      {short:"压",label:"评委不适 / Committee Discomfort",score:s.discomfort,goal:15,max:20,ok:s.discomfort>=4&&s.discomfort<=15,hint:s.discomfort>15?"超过 15，委员会过度不适":s.discomfort<4?"还需达到 4 分":"保持在 4—15 分"}
     ];
+    const overview=$("scoreOverview");overview.replaceChildren();
+    overview.setAttribute("aria-label","本局分数："+items.map(item=>item.label.split(" / ")[0]+item.score+" 分").join("，")+"。点击展开详情。");
     $("passChecklist").replaceChildren();
-    for (const [label, ok, value] of items) {
-      const row = document.createElement("div");
-      row.className = "check " + (ok ? "ok" : "wait");
-      row.innerHTML = "<span>" + (ok ? "PASS" : "WAIT") + "</span><strong>" + label + "</strong><em>" + value + "</em>";
-      $("passChecklist").append(row);
+    for(const item of items){
+      const percent=Math.max(0,Math.min(100,item.score/item.max*100));
+      const tone=item.short==="压"&&item.score>15?"over":item.ok?"ok":"wait";
+      const mini=document.createElement("span");mini.className="score-mini "+tone;
+      const value=document.createElement("span");value.textContent=item.short+" "+item.score;
+      const track=document.createElement("span");track.className="score-mini-track";track.setAttribute("aria-hidden","true");
+      const fill=document.createElement("span");fill.style.width=percent+"%";track.append(fill);mini.append(value,track);overview.append(mini);
+      const row=document.createElement("div");row.className="check score-detail "+tone;
+      const status=document.createElement("span");status.textContent=item.ok?"达标":"未达标";
+      const label=document.createElement("strong");label.textContent=item.label;
+      const total=document.createElement("em");total.textContent=item.score+"/"+item.goal;
+      const bar=document.createElement("div");bar.className="score-health-track";
+      bar.setAttribute("role","meter");bar.setAttribute("aria-label",item.label+"，"+item.hint);
+      bar.setAttribute("aria-valuemin","0");bar.setAttribute("aria-valuemax",String(item.max));bar.setAttribute("aria-valuenow",String(Math.max(0,Math.min(item.max,item.score))));bar.setAttribute("aria-valuetext",item.score+" 分，"+item.hint);
+      if(item.short==="压"){bar.classList.add("discomfort-track");const range=document.createElement("span");range.className="score-safe-range";bar.append(range)}
+      const health=document.createElement("span");health.className="score-health-fill";health.style.width=percent+"%";bar.append(health);
+      const hint=document.createElement("small");hint.textContent=item.hint;
+      row.append(status,label,total,bar,hint);$("passChecklist").append(row);
     }
   }
 
