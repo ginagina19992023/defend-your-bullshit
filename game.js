@@ -667,7 +667,7 @@
       if(!response.ok)throw Error("model unavailable");return String((await response.json()).response||"").trim();
     }
     const response=await fetch("https://text.pollinations.ai/"+encodeURIComponent(prompt)+"?model=openai&seed="+Math.floor(Math.random()*999999999),{signal,referrerPolicy:"no-referrer"});
-    if(!response.ok)throw Error("generation unavailable");return (await response.text()).trim();
+    if(!response.ok)throw Error("接口返回 HTTP "+response.status);return (await response.text()).trim();
   }});
   function strategyTarget(strategy){
     const labels={experience:"身体体验",form:"形式决定",power:"公共权力",evidence:"证据缺口",memory:"记忆与时间"};
@@ -690,7 +690,7 @@
     const result=await writer.generate({project:state.project,question:state.question.text,strategy,discipline:pack().name,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
     if(!result||version!==strategyVersion)return;
     state.strategyDraft=result;$("strategyPreview").textContent=result.text;
-    $("strategyDraftStatus").textContent=result.source==="ai"?"AI 现编 · 可以重编或修改，提交这段文字参与评分。":result.unavailable?"AI 暂时未返回有效新话术，已切换为离线回答。":"离线回答 · 可重编或自行修改。";
+    $("strategyDraftStatus").textContent=result.source==="ai"?"AI 现编 · 可以重编或修改，提交这段文字参与评分。":result.unavailable?"AI 暂时未返回有效新话术，已切换为离线回答。原因："+(result.failure||"未获得有效内容")+"。":"离线回答 · 可重编或自行修改。";
     $("submitDefense").disabled=false;$("submitDefense").textContent="提交这段回应";
   }
   $("customAnswer").addEventListener("input",()=>{

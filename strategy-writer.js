@@ -37,18 +37,18 @@
     function cancel(){sequence++;if(controller)controller.abort();controller=null}
     async function generate(input,{mode='ai',provider='local',model='llama3.1'}={}){
       cancel();const id=sequence;const key=input.project+'|'+input.question+'|'+input.strategy.name;
-      const previous=seen.get(key)||[];const context={...input,previous};let text='',source='local';
+      const previous=seen.get(key)||[];const context={...input,previous};let text='',source='local',failure='';
       if(mode==='ai'){
         controller=new AbortController();const owned=controller;const signal=owned.signal;const timeout=setTimeout(()=>owned.abort(),12000);
         try{
           text=await request(prompt(context),{signal,provider,model});
-          if(!valid(text,input.project)||previous.includes(text))throw Error('unrelated or repeated draft');source='ai';
-        }catch(_){text=''}finally{clearTimeout(timeout)}
+          if(!valid(text,input.project))throw Error('内容未通过项目关联检查');if(previous.includes(text))throw Error('接口返回了重复回答');source='ai';
+        }catch(error){failure=error.name==='AbortError'?'请求超过12秒':(error.message||'网络连接失败');text=''}finally{clearTimeout(timeout)}
       }
       if(id!==sequence)return null;
       if(!text)text=fallback(context);
       seen.set(key,[...previous,text].slice(-8));controller=null;
-      return {text,source,unavailable:mode==='ai'&&source!=='ai'};
+      return {text,source,failure,unavailable:mode==='ai'&&source!=='ai'};
     }
     return {generate,cancel};
   }

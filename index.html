@@ -99,10 +99,10 @@
 
 </dialog>
     <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
-            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。现编默认使用免费接口；选择本机模型时使用该模型。</p>
+            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。现编使用第三方公共接口，可能超时或不可访问；本地回退会注明原因。微信可访问游戏，但不保证接口或语音转写可用。选择本机模型时使用该模型。</p>
             <label for="aiProvider">教授反馈 / OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
-              <option value="pollinations">Free web AI / 微信可体验</option>
+              <option value="pollinations">公共 AI / 联网实验功能</option>
               <option value="local" selected>Local rules only / 最稳定</option>
               <option value="ollama">Local Ollama / 本机模型</option>
             </select>
