@@ -1,7 +1,7 @@
 /* Immediate review-room reaction; closing always cancels animation work. */
 (() => {
   function create(){
-    const $=id=>document.getElementById(id);let timer=null,transition=null,callback=null,full='';
+    const $=id=>document.getElementById(id);let timer=null,transition=null,callback=null,detailsCallback=null,full='';
     const paint=text=>{
       const root=$('reactionText');root.replaceChildren();
       const first=full.indexOf('\n');
@@ -13,10 +13,10 @@
       let last=0;for(const match of content.matchAll(pattern)){verdict.append(document.createTextNode(content.slice(last,match.index)));const mark=document.createElement('em');mark.textContent=match[0];verdict.append(mark);last=match.index+match[0].length}verdict.append(document.createTextNode(content.slice(last)));root.append(verdict);
     };
     const stop=()=>{clearInterval(timer);clearTimeout(transition);timer=transition=null};
-    function finish(){stop();paint(full);const next=callback;callback=null;$('reactionDialog').close();if(next)next()}
-    function thinking({from,name}){stop();callback=null;$('reactionFace').textContent=from;$('reactionName').textContent=name;$('reactionText').textContent='评委正在回想你刚才的论证……';$('reactionContinue').disabled=true;if(!$('reactionDialog').open)$('reactionDialog').showModal()}
-    function resolve({to,text,onContinue}){
-      full=text;callback=onContinue||null;$('reactionContinue').disabled=false;
+    function finish(details=false){stop();paint(full);const next=details?detailsCallback:callback;callback=detailsCallback=null;$('reactionDialog').close();if(next)next()}
+    function thinking({from,name}){stop();callback=detailsCallback=null;$('reactionDetails').disabled=true;$('reactionFace').textContent=from;$('reactionName').textContent=name;$('reactionText').textContent='评委正在回想你刚才的论证……';$('reactionContinue').disabled=true;if(!$('reactionDialog').open)$('reactionDialog').showModal()}
+    function resolve({to,text,onContinue,onDetails,continueLabel="进入下一问"}){
+      full=text;callback=onContinue||null;detailsCallback=onDetails||null;$('reactionDetails').disabled=false;$('reactionContinue').textContent=continueLabel;$('reactionContinue').disabled=false;
       transition=setTimeout(()=>{$('reactionFace').classList.add('reaction-change');$('reactionFace').textContent=to},300);
       const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       $('reactionText').textContent='';let count=0;
@@ -24,8 +24,9 @@
       else timer=setInterval(()=>{count+=2;paint(text.slice(0,count));if(count>=text.length){clearInterval(timer);timer=null}},24);
       $('reactionAccessible').textContent=text;
     }
-    $('reactionContinue').addEventListener('click',finish);
-    $('reactionDialog').addEventListener('cancel',event=>{event.preventDefault();if(!$('reactionContinue').disabled)finish()});
+    $('reactionContinue').addEventListener('click',()=>finish(false));
+    $('reactionDetails').addEventListener('click',()=>finish(true));
+    $('reactionDialog').addEventListener('cancel',event=>{event.preventDefault();if(!$('reactionContinue').disabled)finish(true)});
     $('reactionDialog').addEventListener('close',()=>{$('reactionFace').classList.remove('reaction-change');stop()});
     return {thinking,resolve};
   }

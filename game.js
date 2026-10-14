@@ -11,6 +11,7 @@
   const pack = () => window.DYB_PACKS[$("pack").value];
   const liveUrl = "https://ginagina19992023.github.io/defend-your-bullshit/";
 
+  let pendingBattle=null;
   const state = {
     project: "",
     statement: "",
@@ -106,6 +107,7 @@
   }
 
   function buildPanel() {
+    pendingBattle=null;
     const base = pack().professors.map(prof => {
       const question = random(prof.questions);
       return {
@@ -515,7 +517,7 @@
         updateMood();
         passStatus();
         $("nextRound").disabled = false;
-        reaction.resolve({to:$("professorFace").textContent,text:"评委听完你的补充，重新看了一眼项目。\n"+result.response});
+        reaction.resolve({to:$("professorFace").textContent,text:"评委听完你的补充，重新看了一眼项目。\n"+result.response,onContinue:advanceReview,onDetails:showFeedbackDetails,continueLabel:state.round===2?"查看最终结果":"进入下一问"});
       }, { vocabulary: pack().vocabulary, discipline: pack().id, topic: state.question.topic, question: state.question.text, previousAnswer: answer, followUp: questions.pick({pack:pack().id,project:state.project,topic:state.question.topic,round:state.round,answer,stage:"battle",scores:state.scores}).text });
     }};
     $("reviewDock").hidden=true;
@@ -523,7 +525,8 @@
     const expression=grading.taste.kind==="angry"?">:|":grading.taste.kind==="pleased"?":-)":grading.substance>=3&&grading.depth>=3?"o_o":grading.tags.includes("tooConceptual")?">:|":grading.tags.includes("tooHonest")?":-?":grading.substance>=3?":-)":":-/";
     $("professorFace").textContent=expression;$("reviewFace").textContent=expression;
     $("reviewPresenceText").textContent=reactionLead;
-    reaction.resolve({to:expression,text:reactionLead+"\n"+response,onContinue:enterBattle});
+    pendingBattle=trigger?enterBattle:null;
+    reaction.resolve({to:expression,text:reactionLead+"\n"+response,onContinue:advanceReview,onDetails:showFeedbackDetails,continueLabel:trigger?"进入限时追问":state.round===2?"查看最终结果":"进入下一问"});
   }
 
   function verdict() {
@@ -709,13 +712,18 @@
     critique();
   });
   $("submitDefense").addEventListener("click", submit);
-  $("nextRound").addEventListener("click", () => {
-    if (battle.isPending()) return;
-    battle.hide();
-    state.round += 1;
-    if (state.round >= 3) finish();
-    else critique();
-  });
+  function showFeedbackDetails(){
+    if(pendingBattle){$("nextRound").disabled=false;$("nextRound").textContent="进入限时追问";}
+    $("feedbackPoints").open=true;
+    $("feedbackBlock").scrollIntoView({block:"start"});
+  }
+  function advanceReview(){
+    if(pendingBattle){const enter=pendingBattle;pendingBattle=null;$("nextRound").disabled=true;enter();return;}
+    if(battle.isPending())return;
+    battle.hide();state.round+=1;
+    if(state.round>=3)finish();else critique();
+  }
+  $("nextRound").addEventListener("click",advanceReview);
   $("restart").addEventListener("click", () => { if(professional()){careerUI.render();show("career")}else openSimple(); });
   $("criticPackFile").addEventListener("change", event => {
     const file = event.target.files?.[0];

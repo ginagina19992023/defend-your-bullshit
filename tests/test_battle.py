@@ -96,9 +96,15 @@ class BattleTests(unittest.TestCase):
         self.page.locator('#customReply').evaluate('el=>el.open=true')
         self.page.fill('#customAnswer',text)
 
+    def dismiss_reaction(self):
+        if self.page.locator('#reactionContinue').inner_text()=='进入限时追问':
+            self.page.click('#reactionContinue')
+        else:
+            self.page.click('#reactionDetails')
+
     def close_reaction(self):
         if self.page.locator('#reactionDialog').is_visible():
-            self.page.click('#reactionContinue')
+            self.dismiss_reaction()
 
     def scores(self):
         return self.page.locator('#passChecklist .check em').all_text_contents()
@@ -116,7 +122,7 @@ class BattleTests(unittest.TestCase):
 
     def submit_and_settle(self):
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         if self.page.locator('#battle').is_visible():
             self.fill_collage()
             self.page.click('#battleSubmit')
@@ -151,7 +157,7 @@ class BattleTests(unittest.TestCase):
         for _ in range(3):
             self.answer( '物质性 边界的消解 具身经验 本体 范式 话语 解构')
             self.page.click('#submitDefense')
-            self.page.click('#reactionContinue')
+            self.dismiss_reaction()
             if self.page.locator('#battle').is_visible():
                 battles += 1
                 self.assertIn('不适值首次达到 10', self.page.locator('#battleReason').inner_text())
@@ -185,7 +191,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate('Math.random = () => 0')
         self.answer( '物质性 边界的消解 具身经验 本体 范式 话语 解构 测试 记录 反馈 使用者')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.assertIn('欣赏型', self.page.locator('#battleReason').inner_text())
         self.assertEqual(self.page.locator('.slot').count(), 4)
         self.assertEqual(self.page.locator('.chip').count(), 16)
@@ -198,7 +204,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate('Math.random = () => 0')
         self.answer( '好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.assertIn('随机突发', self.page.locator('#battleReason').inner_text())
 
     def test_timeout_pause_and_reset_cancel_timers(self):
@@ -207,7 +213,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate('Math.random = () => 0')
         self.answer( '好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         expect(self.page.locator('#battleLive')).to_be_visible()
         expect(self.page.locator('#battleStart')).to_be_hidden()
         before = [int(value.split('/')[0]) for value in self.scores()]
@@ -227,7 +233,7 @@ class BattleTests(unittest.TestCase):
         self.page.click('#nextRound')
         self.answer( '好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.page.evaluate('testBattle.reset()')
         self.page.clock.run_for(25000)
         expect(self.page.locator('#battle')).to_be_hidden()
@@ -238,7 +244,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate('Math.random=()=>0')
         self.answer('好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.page.set_viewport_size({'width':390,'height':844})
         for kind in ['opening','move','concept','proof']:
             tile=self.page.locator('.chip[data-type="'+kind+'"]').first
@@ -261,7 +267,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate('Math.random=()=>0')
         self.answer('好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         tile=self.page.locator('.chip[data-type="proof"]').last
         text=tile.inner_text()
         tile.click()
@@ -284,12 +290,45 @@ class BattleTests(unittest.TestCase):
         self.close_reaction()
         expect(self.page.locator('#battleContext')).to_be_hidden()
 
+    def test_reaction_buttons_show_details_or_advance_without_bottom_navigation(self):
+        self.begin()
+        for round in range(3):
+            self.answer('通过测试记录用户反馈。')
+            self.page.click('#submitDefense')
+            expect(self.page.locator('#reactionDetails')).to_be_visible()
+            if round==0:
+                self.page.click('#reactionDetails')
+                expect(self.page.locator('#feedbackPoints')).to_have_attribute('open','')
+                self.assertEqual(self.page.locator('#roundLabel').inner_text(),'ROUND 1 / 3')
+                self.page.click('#nextRound')
+            else:
+                self.assertEqual(self.page.locator('#reactionContinue').inner_text(),'查看最终结果' if round==2 else '进入下一问')
+                self.page.click('#reactionContinue')
+        expect(self.page.locator('#final')).to_be_visible()
+
+    def test_battle_details_do_not_start_timer_until_player_continues(self):
+        self.begin()
+        self.page.evaluate('Math.random=()=>0')
+        self.answer('好')
+        self.page.click('#submitDefense')
+        self.assertEqual(self.page.locator('#reactionContinue').inner_text(),'进入限时追问')
+        self.page.click('#reactionDetails')
+        expect(self.page.locator('#battle')).to_be_hidden()
+        self.assertEqual(self.page.locator('#nextRound').inner_text(),'进入限时追问')
+        self.page.click('#nextRound')
+        expect(self.page.locator('#battleLive')).to_be_visible()
+        self.fill_collage()
+        self.page.click('#battleSubmit')
+        self.assertEqual(self.page.locator('#reactionContinue').inner_text(),'进入下一问')
+        self.page.click('#reactionContinue')
+        self.assertEqual(self.page.locator('#roundLabel').inner_text(),'ROUND 2 / 3')
+
     def test_drag_wrong_tiles_chaos_and_replacement(self):
         self.begin()
         self.page.evaluate('Math.random = () => 0')
         self.answer( '好')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         first = self.page.locator('.chip[data-type="opening"]').first
         first.drag_to(self.page.locator('.slot[data-slot="opening"]'))
         expect(self.page.locator('.slot[data-slot="opening"]')).to_have_class('slot filled good')
@@ -358,7 +397,7 @@ class BattleTests(unittest.TestCase):
         self.assertTrue('作品与观看的关系' in feedback or '媒介与呈现方式' in feedback)
         self.assertIn('把开幕致辞循环播放八小时',feedback)
         self.page.locator('#reactionDialog').screenshot(path='/tmp/dyb-art-feedback.png')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
 
     def test_absurd_project_drawings_follow_selection_and_stay_above_review(self):
         projects=self.page.evaluate('DYB_PROJECT_DRAWINGS.items.map(item=>item.project)')
@@ -556,7 +595,7 @@ class BattleTests(unittest.TestCase):
         for _ in range(3):
             self.answer('好')
             self.page.click('#submitDefense')
-            self.page.click('#reactionContinue')
+            self.dismiss_reaction()
             self.page.click('#nextRound')
         expect(self.page.locator('#careerInvitation')).to_be_visible()
         self.page.click('#declineInvitation')
@@ -572,7 +611,7 @@ class BattleTests(unittest.TestCase):
         for _ in range(3):
             self.answer('好')
             self.page.click('#submitDefense')
-            self.page.click('#reactionContinue')
+            self.dismiss_reaction()
             self.page.click('#nextRound')
         self.assertFalse(self.page.locator('#careerInvitation').is_visible())
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-play-v1')).history.length"),2)
@@ -587,7 +626,7 @@ class BattleTests(unittest.TestCase):
         for _ in range(3):
             self.answer('好')
             self.page.click('#submitDefense')
-            self.page.click('#reactionContinue')
+            self.dismiss_reaction()
             self.page.click('#nextRound')
         self.page.click('#acceptInvitation')
         expect(self.page.locator('#career')).to_be_visible()
@@ -659,7 +698,7 @@ class BattleTests(unittest.TestCase):
         self.page.locator('#aiProvider').evaluate("el=>el.value='pollinations'")
         self.answer('我们记录了使用者路径，并通过测试比较改动前后的时间。')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         expect(self.page.locator('#feedback')).to_contain_text('你说「')
         self.assertNotIn('剧烈航向',self.page.locator('#feedback').inner_text())
 
@@ -692,7 +731,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate("Math.random=()=>0")
         self.answer('物质性 边界的消解 具身经验 本体 范式 话语 解构 测试 记录 反馈 使用者')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         expect(self.page.locator('#battleQuestion')).to_be_visible()
         question=self.page.locator('#battleQuestion').inner_text()
         self.assertIn('你刚才说',question)
@@ -708,13 +747,15 @@ class BattleTests(unittest.TestCase):
         self.begin()
         self.answer('我承认失败，也许不能证明形式成立，无法解释这个决定。')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         feedback=self.page.locator('#feedback').inner_text()
         reason=self.page.locator('#feedbackReason').text_content()
         self.assertNotIn('评委听到',feedback)
         self.assertNotIn('。。',feedback+reason)
         self.assertNotIn('。；',reason)
-        self.assertFalse(self.page.locator('#feedbackReason').is_visible())
+        expect(self.page.locator('#feedbackReason')).to_be_visible()
+        self.page.locator('#feedbackPoints summary').click()
+        expect(self.page.locator('#feedbackReason')).to_be_hidden()
         self.page.locator('#feedbackPoints summary').click()
         expect(self.page.locator('#feedbackReason')).to_be_visible()
         self.page.locator('#feedbackOriginal summary').click()
@@ -737,7 +778,7 @@ class BattleTests(unittest.TestCase):
         self.page.screenshot(path='/tmp/dyb-review-reaction.png')
         expect(self.page.locator('#reactionContinue')).to_be_enabled()
         self.assertTrue(self.page.locator('#reactionAccessible').text_content())
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         expect(self.page.locator('#reactionDialog')).to_be_hidden()
 
 
@@ -761,7 +802,7 @@ class BattleTests(unittest.TestCase):
         final=self.page.locator('#strategyPreview').inner_text()
         self.page.click('#submitDefense')
         expect(self.page.locator('#reactionDialog')).to_be_visible()
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.assertEqual(self.page.locator('#submittedAnswer').text_content(),final)
         self.assertNotIn('这不是单纯',final)
 
@@ -803,13 +844,13 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(self.page.locator('.taste-details').count(),0)
         self.answer('我们用身体感知旧墙的痕迹，比较记忆和时间如何改变地方的观看路径。不是简单怀旧，而是记录参与者的行动。')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.assertEqual(self.page.locator('#feedback').inner_text().count('命中评委偏好'),1)
         self.assertNotIn('命中评委偏好',self.page.locator('#feedbackReason').text_content())
         self.page.click('#nextRound')
         self.answer('我们不必回答时间的问题，换个概念就好了。')
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         expect(self.page.locator('#feedback')).to_contain_text('触怒偏好')
         expect(self.page.locator('#feedback')).to_contain_text('不适 +2')
 
@@ -839,7 +880,7 @@ class BattleTests(unittest.TestCase):
         expect(self.page.locator('#normalVoiceAudio')).to_be_visible()
         self.assertGreater(self.page.evaluate('normalMicStops'),0)
         self.page.click('#submitDefense')
-        self.page.click('#reactionContinue')
+        self.dismiss_reaction()
         self.assertEqual(self.page.locator('#submittedAnswer').text_content(),'我们记录使用者的路径，比较材料、记忆与时间如何改变体验。')
 
     def test_denied_voice_permission_keeps_existing_draft(self):
