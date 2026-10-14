@@ -407,7 +407,7 @@
 
   function aiPrompt(answer, grading, questionText=state.question.text) {
     const profile=window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id);
-    return window.DYB_CRITIC_FEEDBACK.prompt({discipline:pack().name,object:profile.object,project:state.project,question:questionText,answer,interest:state.professor.biasLabel,reason:grading.reason,tags:grading.tags});
+    return window.DYB_CRITIC_FEEDBACK.prompt({discipline:pack().name,object:profile.object,project:state.project,question:questionText,answer,interest:state.professor.biasLabel,reason:[grading.reason,grading.taste?.reason].filter(Boolean).join("；"),tags:[...(grading.tags||[]),grading.taste?.kind==="angry"?"触怒偏好":grading.taste?.kind==="pleased"?"偏好受到回应":"",grading.discomfort>=6?"不适较高":""].filter(Boolean)});
   }
 
   async function fetchPollinations(prompt) {
