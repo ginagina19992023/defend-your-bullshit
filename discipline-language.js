@@ -9,14 +9,14 @@
   function feedback(id,tag,index,project){
     const p=profile(id),subject='「'+project+'」';
     const lines={
-      tooEmpirical:[`你终于为${subject}提出了可检查的判断。评委有点不习惯：${p.object}竟然准备接受现实的检验。`,`证据可以帮助判断${subject}，但请分清你观察到的${p.people}反馈，和你希望他们给出的答案。`],
-      tooConceptual:[`概念已经把${subject}包围了。评委现在想看${p.object}本身，而不是再看一层术语保护膜。`,`${subject}的理论密度很高，但${p.method}的依据还不够。委员会暂时把这个缺口命名为张力。`],
-      tooHonest:[`你承认${subject}还不能证明自己的判断。评委决定把这种不确定叫作激进反思，但仍在等一个具体的验证办法。`,`对${subject}的这种诚实令人担忧，但也许正是它使${p.object}获得了不稳定的伦理位置。请让限制落实到下一次修改，而不是停留在告白。`],
+      tooEmpirical:[`你终于为${subject}提出了可检查的判断。评委有点不习惯：${p.object}竟然准备接受现实的检验。`,`你为${subject}提供了证据。评委追问这些结果能否支持概念；听到不能后，又要求你暂时不要修改概念。`],
+      tooConceptual:[`概念已经把${subject}包围了。评委现在想看${p.object}本身，而不是再看一层术语保护膜。`,`${subject}的依据仍有缺口。委员会先将缺口命名为张力，随后要求你证明这份张力不是缺口。`],
+      tooHonest:[`你承认${subject}还不能证明自己的判断。评委决定把这种不确定叫作激进反思，但仍在等一个具体的验证办法。`,`你承认${subject}尚未成立。教授认为这种诚实值得肯定，但建议下次不要在评图时使用。`],
       tooAmbitious:[`你试图让${subject}同时解释太多事情。评委建议先把${p.material}中的一个决定说清，世界可以下周再拯救。`,`${subject}的论证野心已经超过当前材料。奇怪的是，这让它更像研究，也更像一份尚未完成的申请。`],
       eraseDesign:[`你把删减本身作为${subject}的论证。评委怀疑你真的开始质疑${p.removal}，并对此产生神秘赞许。`,`当${subject}最显眼的部分被取消，剩下的${p.material}反而需要解释。教授短暂沉默：少了一点，不代表自动多了一层意义。`],
       evasive:[`你没有说清${subject}的核心决定，却成功移动了问题的位置。评委暂时无法证明这是错误的。`,`这个回答绕开了${subject}的具体限制，又制造了一个更大的问题。评委想请你先返回原题。`],
       balanced:[`你把${subject}的概念与${p.material}连了起来。评委若有所思：这个项目可能真的有点意思，但下一步必须让${p.people}的实际反馈参与判断。`,`${subject}既没有彻底悬空，也没有被一句“有用”结束讨论。评委已经找到一个可以继续追问的具体关系。`],
-      weak:[`评委还没听懂${subject}为什么必须这样做。请先解释${p.object}的一个决定，再给它一层学术保护。`,`目前的回答还不足以说明${p.people}会如何面对${subject}。项目已经有标题，论证还需要一个入口。`]
+      weak:[`评委要求你把${subject}讲得更清楚，同时提醒你：如果讲得太清楚，它可能只剩下普通的${p.object}。`,`目前的回答还不足以说明${p.people}会如何面对${subject}。项目已经有标题，论证还需要一个入口。`]
     };
     const list=lines[tag]||lines.weak;return list[index%list.length];
   }
