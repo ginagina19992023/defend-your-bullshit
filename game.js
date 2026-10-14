@@ -153,7 +153,7 @@
     });
   }
 
-  function statement() {
+  async function statement() {
     const p = pack();
     const v = p.vocabulary;
     const intensity = Number($("intensity").value);
@@ -162,18 +162,24 @@
     const c = random(v.filter(x => x !== a && x !== b));
     const project = state.project;
     state.statementVariant=((state.statementVariant??-1)+1)%3;
-    state.statement=window.DYB_DISCIPLINE_LANGUAGE.statement(p.id,project,[a,b,c],state.statementVariant).slice(0,intensity+1).join("\n\n");
+    const input={project,disciplineId:p.id,variant:state.statementVariant};
+    state.statement=window.DYB_STATEMENT_WRITER.fallback(input).slice(0,intensity+1).join("\n\n");
     $("statementProject").textContent = state.project;
     window.DYB_PROJECT_DRAWINGS.render($("statementDrawing"),state.project,pack().id);
     renderStatement([a, b, c]);
     show("statement");
+    $("statementSource").textContent=$("strategyMode").value==="ai"?"正在根据项目重写陈述……":"项目专属陈述";
+    const result=await statementWriter.generate(input,{mode:$("strategyMode").value});
+    if(!result||$("statement").hidden||state.project!==project)return;
+    state.statement=result.paragraphs.slice(0,intensity+1).join("\n\n");renderStatement([a,b,c]);
+    $("statementSource").textContent=result.source==="ai"?"AI 陈述 · 从项目细节展开":"项目专属陈述 · 在线未启用或暂不可用";
   }
 
   function renderStatement(concepts) {
     const container = $("generated");
     container.replaceChildren();
     const labels = ["01 / 起手：重新定义", "02 / 展开：把动作讲成系统", "03 / 加码：让概念接管现场", "04 / 收束：把问题留给评委"];
-    const terms = [...new Set([...concepts, "研究", "假设", "观察", "比较", "检验", "试验", "参与者", "过程而非结果", "问题", "意义"])].sort((a,b)=>b.length-a.length);
+    const terms = [...new Set([...concepts, "研究", "假设", "观察", "比较", "检验", "试验", "参与者", "过程而非结果", "问题", "意义", "三厘米", "跨越", "城墙", "进入资格", "取消", "建造", "身体", "忍耐", "等待", "观看", "注意力", "起点"])].sort((a,b)=>b.length-a.length);
     state.statement.split("\n\n").forEach((paragraph,index)=>{
       const section = document.createElement("section");
       section.className = "speech-beat" + (index===0 ? " speech-lead" : "");
@@ -597,6 +603,7 @@
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
     try{await onlineClient.request("只回复：连接成功。",{signal:controller.signal});status.textContent="连接成功，可以尝试在线生成答辩。"}catch(error){status.textContent=error.name==="AbortError"?"在线连接超过25秒未完成。":error.message}finally{clearTimeout(timeout);button.disabled=false}
   });
+  const statementWriter=window.DYB_STATEMENT_WRITER.create({request:(prompt,options)=>onlineClient.request(prompt,options)});
   const writer=window.DYB_STRATEGY_WRITER.create({request:async(prompt,{signal,provider,model})=>{
     if(provider==="ollama"){
       const response=await fetch("http://localhost:11434/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model,prompt,stream:false}),signal});

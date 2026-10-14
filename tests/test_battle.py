@@ -710,6 +710,16 @@ class BattleTests(unittest.TestCase):
         expect(self.page.locator('#feedback')).to_contain_text(reply)
         self.assertNotIn('你说「',self.page.locator('#feedback').inner_text())
 
+    def test_opening_statement_magnifies_the_project_before_any_review(self):
+        self.page.fill('#project','把广场抬高三厘米，要求所有人绕路')
+        self.page.click('#generate')
+        expect(self.page.locator('#generated')).to_contain_text('最小城墙')
+        expect(self.page.locator('#generated')).to_contain_text('跨越')
+        self.assertNotIn('行政级别',self.page.locator('#generated').inner_text())
+        self.page.click('#regenerate')
+        expect(self.page.locator('#generated')).to_contain_text('三厘米')
+        expect(self.page.locator('#generated')).to_contain_text('谁需要抬脚')
+
     def test_unanchored_ai_poetry_falls_back_to_relevant_local_feedback(self):
         self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
         self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':'若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。'})))
