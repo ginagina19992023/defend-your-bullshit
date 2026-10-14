@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
-  <link rel="stylesheet" href="./style.css?v=unbuilding-20261014">
+  <link rel="stylesheet" href="./style.css?v=critic-ai-20261014">
 </head>
 <body>
   <main class="paper">
@@ -102,8 +102,8 @@
             <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。已接免费在线模型，无需玩家填写 key；超时或额度用尽时使用离线回答，并注明来源。语音转写仍取决于浏览器支持。</p>
             <label for="aiProvider">教授反馈 / OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
-              <option value="pollinations">在线 AI / 免费服务后端</option>
-              <option value="local" selected>Local rules only / 最稳定</option>
+              <option value="pollinations" selected>AI 教授点评 / 失败自动备用</option>
+              <option value="local">备用评语 / 无需等待</option>
               <option value="ollama">Local Ollama / 本机模型</option>
             </select>
             <details class="ai-connection-settings"><summary>连接在线 AI</summary>
@@ -310,26 +310,27 @@
     <div class="crumb">?</div>
   </main>
   <dialog id="reactionDialog" class="reaction-dialog" aria-labelledby="reactionName"><p class="eyebrow">THE PANEL REACTS / 评委反应</p><h2 id="reactionName"></h2><div id="reactionFace" aria-hidden="true">:-|</div><p id="reactionText" aria-hidden="true"></p><p id="reactionAccessible" class="visually-hidden"></p><div class="reaction-actions"><button id="reactionDetails" class="outline" type="button">查看详情</button><button id="reactionContinue" type="button">进入下一问</button></div></dialog>
-  <script src="./normal-voice.js?v=unbuilding-20261014"></script>
-  <script src="./critic-tastes.js?v=unbuilding-20261014"></script>
-  <script src="./ai-config.js?v=unbuilding-20261014"></script>
-  <script src="./ai-client.js?v=unbuilding-20261014"></script>
-  <script src="./discipline-language.js?v=unbuilding-20261014"></script>
-  <script src="./question-arguments.js?v=unbuilding-20261014"></script>
-  <script src="./satirical-drafts.js?v=unbuilding-20261014"></script>
-  <script src="./strategy-writer.js?v=unbuilding-20261014"></script>
-  <script src="./questions.js?v=unbuilding-20261014"></script><script src="./reaction.js?v=unbuilding-20261014"></script>
-  <script src="./packs.js?v=unbuilding-20261014"></script>
-  <script src="./battle-words.js?v=unbuilding-20261014"></script>
-  <script src="./battle.js?v=unbuilding-20261014"></script>
-  <script src="./critics.js?v=unbuilding-20261014"></script>
-  <script src="./share-card.js?v=unbuilding-20261014"></script>
-  <script src="./career.js?v=unbuilding-20261014"></script>
-  <script src="./career-ui.js?v=unbuilding-20261014"></script>
-  <script src="./play-session.js?v=unbuilding-20261014"></script>
-  <script src="./project-drawings.js?v=unbuilding-20261014"></script>
-  <script src="./review-outcomes.js?v=unbuilding-20261014"></script>
-  <script src="./game.js?v=unbuilding-20261014"></script>
+  <script src="./normal-voice.js?v=critic-ai-20261014"></script>
+  <script src="./critic-tastes.js?v=critic-ai-20261014"></script>
+  <script src="./ai-config.js?v=critic-ai-20261014"></script>
+  <script src="./ai-client.js?v=critic-ai-20261014"></script>
+  <script src="./discipline-language.js?v=critic-ai-20261014"></script>
+  <script src="./question-arguments.js?v=critic-ai-20261014"></script>
+  <script src="./satirical-drafts.js?v=critic-ai-20261014"></script>
+  <script src="./strategy-writer.js?v=critic-ai-20261014"></script>
+  <script src="./questions.js?v=critic-ai-20261014"></script><script src="./reaction.js?v=critic-ai-20261014"></script>
+  <script src="./packs.js?v=critic-ai-20261014"></script>
+  <script src="./battle-words.js?v=critic-ai-20261014"></script>
+  <script src="./battle.js?v=critic-ai-20261014"></script>
+  <script src="./critics.js?v=critic-ai-20261014"></script>
+  <script src="./share-card.js?v=critic-ai-20261014"></script>
+  <script src="./career.js?v=critic-ai-20261014"></script>
+  <script src="./career-ui.js?v=critic-ai-20261014"></script>
+  <script src="./play-session.js?v=critic-ai-20261014"></script>
+  <script src="./project-drawings.js?v=critic-ai-20261014"></script>
+  <script src="./review-outcomes.js?v=critic-ai-20261014"></script>
+  <script src="./critic-feedback.js?v=critic-ai-20261014"></script>
+  <script src="./game.js?v=critic-ai-20261014"></script>
 </body>
 </html>
 

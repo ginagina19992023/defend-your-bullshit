@@ -697,6 +697,19 @@ class BattleTests(unittest.TestCase):
         self.close_reaction()
         self.assertEqual(self.page.evaluate('battleResults[1].scores'),result['scores'])
 
+    def test_ai_professor_reaction_appears_without_forced_answer_prefix(self):
+        self.assertEqual(self.page.locator('#aiProvider option[selected]').get_attribute('value'),'pollinations')
+        self.begin()
+        self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
+        self.page.locator('#aiProvider').evaluate("el=>el.value='pollinations'")
+        reply='评委对生理需求竟能维持轴线秩序感到迟疑。他开始怀疑，自己以往赞许的仪式性，是否同样以身体的忍耐为前提。'
+        self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':reply})))
+        self.answer('身体的忍耐成为轴线秩序的前提，生理需求被拉长为建筑的仪式。')
+        self.page.click('#submitDefense')
+        expect(self.page.locator('#reactionDialog')).to_be_visible()
+        expect(self.page.locator('#feedback')).to_contain_text(reply)
+        self.assertNotIn('你说「',self.page.locator('#feedback').inner_text())
+
     def test_unanchored_ai_poetry_falls_back_to_relevant_local_feedback(self):
         self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
         self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':'若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。'})))

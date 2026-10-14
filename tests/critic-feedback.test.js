@@ -1,0 +1,5 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');const box={window:{}};vm.runInNewContext(fs.readFileSync('critic-feedback.js','utf8'),box);const api=box.window.DYB_CRITIC_FEEDBACK;
+const input={project:'把通往厕所的路径拉长成三百米轴线',answer:'身体的忍耐成为轴线秩序的前提，生理需求被拉长为建筑的仪式。',question:'为何需要这么长？',discipline:'建筑',object:'建筑项目',interest:'身体经验',reason:'回应了身体经验，依据未验证',tags:['经验']};
+test('prompt binds the actual answer, question, discipline and rule judgment',()=>{const p=api.prompt(input);for(const term of [input.answer,input.question,input.reason,'不写段子','不要每次都存在危机','不复述回答开头'])assert(p.includes(term))});
+test('a specific professor reaction needs no forced quotation of the opening',()=>{assert(api.valid('评委对生理需求竟能维持轴线秩序感到迟疑。他开始怀疑，自己以往赞许的仪式性，是否同样以身体的忍耐为前提。',input));assert(!api.valid('这个项目很有意思，教授认为它的意义十分重大，值得深入研究。',input))});
+test('unrelated poetry, API errors and cross-discipline content fall back',()=>{assert(!api.valid('若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。',input));assert(!api.valid('<html>unauthorized</html>',input));assert(!api.valid('评委对生理需求和轴线秩序感到震惊。',input,{valid:()=>false}));assert(!api.valid('字'.repeat(161),input))});

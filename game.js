@@ -405,20 +405,9 @@
     writeStrategy(0);
   }
 
-  function aiPrompt(answer, grading) {
-    return [
-      "你是一个虚构的"+window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id).name+"教授，写中文。不要提真实机构或真实教授姓名。",
-      "本学科："+pack().name+"。评论对象是"+window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id).object+"，不要使用其他学科的项目设定或比喻。",
-      "请根据玩家答辩给出一段不超过90字的讽刺反馈。",
-      "语气：荒谬、聪明、像critic，但不要人身攻击。",
-      "教授偏好：" + state.professor.biasLabel,
-      "项目：" + state.project,
-      "教授问题：" + state.question.text,
-      "玩家回答：" + answer,
-      "规则判定：" + grading.tags.join(", ") + "；" + grading.reason,
-      "必须逐字引用玩家回答开头的这段原文：「" + answer.slice(0,16) + "」。指出它如何回应教授问题、哪里缺少证据。不得编造海报、长椅等无关场景，不写诗，不用空洞隐喻。",
-      "只输出反馈正文。"
-    ].join("\n");
+  function aiPrompt(answer, grading, questionText=state.question.text) {
+    const profile=window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id);
+    return window.DYB_CRITIC_FEEDBACK.prompt({discipline:pack().name,object:profile.object,project:state.project,question:questionText,answer,interest:state.professor.biasLabel,reason:grading.reason,tags:grading.tags});
   }
 
   async function fetchPollinations(prompt) {
@@ -437,13 +426,13 @@
     return (data.response || "").trim();
   }
 
-  async function optionalAiFeedback(answer, grading) {
+  async function optionalAiFeedback(answer, grading, questionText=state.question.text) {
     const provider = $("aiProvider").value;
-    if (provider === "local") return "";
-    const prompt = aiPrompt(answer, grading);
+    if (provider === "local" || !answer.trim()) return "";
+    const prompt = aiPrompt(answer, grading, questionText);
     try {
       const result = provider === "ollama" ? await fetchOllama(prompt) : await fetchPollinations(prompt);
-      return answer.length >= 6 && result.length <= 400 && result.includes(answer.slice(0,16)) && window.DYB_DISCIPLINE_LANGUAGE.valid(result,pack().id) && !/<html|<!doctype|unauthorized|api key/i.test(result) ? result : "";
+      return window.DYB_CRITIC_FEEDBACK.valid(result,{project:state.project,answer,disciplineId:pack().id},window.DYB_DISCIPLINE_LANGUAGE)?result:"";
     } catch (error) {
       console.warn("AI feedback failed, falling back to local rules:", error);
       return "";
@@ -470,7 +459,7 @@
     const excerpt=answer.split(/[。！？\n]/).find(Boolean)||answer;
     const localResponse = "你说「" + excerpt.slice(0,42) + (excerpt.length>42?"…":"") + "」。\n" + window.DYB_DISCIPLINE_LANGUAGE.feedback(pack().id,mainTag,Math.floor(Math.random()*2),state.project);
     const trigger = battle.pickTrigger(state.scores, grading);
-    const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
+    const aiResponse = await optionalAiFeedback(answer, grading);
     const response = [aiResponse||localResponse,grading.taste.reason].filter(Boolean).join("\n\n");
     $("submitDefense").textContent = trigger ? "已进入现实 BATTLE" : "答辩已提交";
     $("feedback").textContent = response;
@@ -498,13 +487,15 @@
           },
           reason: [grading.reason,grading.taste.reason].filter(Boolean).join("\n")
         };
-      }, result => {
+      }, async result => {
         const oldFace=$("professorFace").textContent;
         reaction.thinking({from:oldFace,name:state.professor.name});
         for (const key of Object.keys(state.scores)) {
           state.scores[key] += result.scores[key];
           if (key !== "substance") state.scores[key] = Math.max(0, state.scores[key]);
         }
+        const aiResponse=await optionalAiFeedback(result.answer||result.text||"",{tags:["限时补充"],reason:result.response||""},result.question);
+        if(aiResponse){result.ruleResponse=result.response;result.response=aiResponse}
         state.history[state.history.length - 1].battle = result;
         updateMood();
         passStatus();
