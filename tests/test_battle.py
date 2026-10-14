@@ -731,12 +731,12 @@ class BattleTests(unittest.TestCase):
     def test_opening_statement_magnifies_the_project_before_any_review(self):
         self.page.fill('#project','把广场抬高三厘米，要求所有人绕路')
         self.page.click('#generate')
-        expect(self.page.locator('#generated')).to_contain_text('最小城墙')
+        expect(self.page.locator('#generated')).to_contain_text('无法跨越的城墙')
         expect(self.page.locator('#generated')).to_contain_text('跨越')
         self.assertNotIn('行政级别',self.page.locator('#generated').inner_text())
         self.page.click('#regenerate')
         expect(self.page.locator('#generated')).to_contain_text('三厘米')
-        expect(self.page.locator('#generated')).to_contain_text('谁需要抬脚')
+        expect(self.page.locator('#generated')).to_contain_text('越过它的资格')
 
     def test_unanchored_ai_poetry_falls_back_to_relevant_local_feedback(self):
         self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
