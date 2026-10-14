@@ -78,6 +78,7 @@
     const p=window.DYB_DISCIPLINE_LANGUAGE?.profile(disciplineId)||{people:'参与者',method:'比较介入前后的实际行动'};
     const found=cases.find(([pattern,id])=>id===disciplineId&&pattern.test(project));
     const c=found?found[2]:{premise:'我提出题目中的这个介入，但不预设它天然必要',alternative:'不做这次介入，保留原来的办法',experience:`${p.people}可以尝试、拒绝或修改使用方式，具体反应还需要记录`,stake:`${p.people}承担尝试和解释的成本，设计者决定介入的条件`,method:p.method,failure:'介入只增加成本，没有改变题目要讨论的关系',time:'第一次与持续参与的反馈需要分别记录',twist:'不能先替人制造一道题，再把会答这道题叫作专业价值'};
+    if(!c.magnification)c.magnification=c.premise+'；这项决定不再被当作局部安排，而成为'+p.people+'必须接受的存在条件，拒绝它也被纳入它已经成立的证明';
     const kind=intent(question,topic);
     const response={
       necessity:{demand:'解释为什么必须这么做，并说明不用它会损失什么',answer:`必要性只可能来自这一点：${c.premise}；如果${c.alternative}也能得到同样关系，我就不能坚持原方案`,test:`对照${c.alternative}与当前方案，再${c.method}`},
