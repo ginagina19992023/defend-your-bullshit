@@ -90,7 +90,7 @@
     return {...response,intent:kind,case:{...c,magnification:c.magnification||c.premise+'；这个微小介入使原本默认的关系变得需要重新解释'},grounded:Boolean(found),question};
   }
   function valid(text,plan){
-    const groups={compare:[/比较|对照|区别|差别|替代/,/如果|与|前后|两种|而/],evidence:[/记录|测试|观察|访谈|对照|验证|原型/,/计划|准备|如果|没有|尚未/],failure:[/如果|若|反例/,/撤回|修改|取消|改为|放弃|承认/],permission:[/拒绝|退出|修改|使用权|解释权|授权/,/观众|用户|使用者|参与者|受到影响|当事人/],cost:[/承担|代价|成本|负担|损失|受益|获得/,/观众|用户|人|使用者|参与者|作者|设计者/],time:[/时间|重复|持续|结束|第一次|首次|时长|迭代|记忆|小时/],experience:[/身体|人|观众|用户|参与者|使用者/,/行动|停下|停留|观看|经过|离开|感知|操作|体验|尝试|绕行/],necessity:[/必要|因为|为了|否则|如果|若|由于|来自|正是|使得|从而|意味着|不可替代|必须/]};
+    const groups={compare:[/比较|对照|区别|差别|替代/,/如果|与|前后|两种|而/],evidence:[/记录|测试|观察|访谈|对照|验证|原型/,/计划|准备|如果|没有|尚未/],failure:[/如果|若|反例/,/撤回|修改|取消|改为|放弃|承认/],permission:[/拒绝|退出|修改|使用权|解释权|授权/,/观众|用户|使用者|参与者|受到影响|当事人/],cost:[/承担|代价|成本|负担|损失|受益|获得/,/观众|用户|人|使用者|参与者|作者|设计者/],time:[/时间|重复|持续|结束|第一次|首次|时长|迭代|记忆|小时/],experience:[/身体|人|观众|用户|参与者|使用者/,/行动|停下|停留|观看|经过|离开|离场|听|感知|操作|体验|尝试|绕行/],necessity:[/必要|因为|为了|否则|如果|若|由于|来自|正是|使得|从而|意味着|不可替代|必须/]};
     return (groups[plan.intent]||[]).every(pattern=>pattern.test(text));
   }
   function drafts(input){
@@ -104,7 +104,13 @@
       erase:[`${c.magnification}。若取消介入也成立，${role}的必要性就需要重新解释`, `取消介入不等于取消意义；${role}也可能是在生产需要自己解决的关系`,`${c.magnification}。我希望检验的还包括${role}是否必须存在`],
       balanced:[c.magnification,`${c.premise}；${c.magnification}`,`${c.magnification}，这才是需要讨论的具体关系`]
     };
-    return (interpretations[input.strategy.style]||interpretations.balanced).map(argument=>`${a.answer}。${argument}。`);
+    return (interpretations[input.strategy.style]||interpretations.balanced).map(argument=>{
+      const direct=a.answer.split('；')[0].replace(/^(必要性只可能来自这一点：|先把利益说清：|时间改变的是这一点：|我设想的具体行动是：)/,'');
+      const first=(a.intent==='necessity'?'必要性在于':a.intent==='compare'?'两种方案的区别在于':'')+direct+(a.intent==='evidence'?'，尚未验证':'')+'。';
+      const units=argument.split(/[。；]/).filter(Boolean);
+      const second=units.find(unit=>!direct.includes(unit)&&first.length+unit.length+1<=140);
+      return first+(second?second+'。':'');
+    });
 
   }
   window.DYB_QUESTION_ARGUMENTS={plan,intent,valid,cases,drafts};

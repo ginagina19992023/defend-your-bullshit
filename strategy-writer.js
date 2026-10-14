@@ -11,10 +11,11 @@
   function prompt({project,question,strategy,discipline,disciplineId,topic,criticInterest="",previous=[]}){
     const plan=window.DYB_QUESTION_ARGUMENTS?.plan({project,question,topic,disciplineId});
     return ['你正在玩学术嘴替游戏。你扮演替学生作答的人，生成玩家将说出的答辩，而不是教授的评论。',
-      '写中文，2到3句，60到110字，最多140字。像真正硬撑的学术嘴替：认真、尖锐、荒谬、有节奏。禁止写成产品说明、温吞建议或散文。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
+      '写中文，两句为主，50到80字，最多100字。像真正硬撑的学术嘴替：认真、尖锐、荒谬、有节奏。禁止写成产品说明、温吞建议或散文。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
       '核心写法：抓住题目最微小或离谱的细节→说明它具体怎样改变行动或关系→将这个差别过度郑重地放大为边界、资格、秩序或真实的问题。三步保持同一条因果链。荒谬来自小题大做的论证，不来自随机跳跃、拟人和结尾段子。不写“荒诞推论”等标签，不强行总结。',
       plan?'本题可放大的具体关系：'+plan.case.magnification+'。这是论证方向，不要逐字照抄。':'从自定义项目实际的数字、动作、材料或限制推导意义，不借用其他项目的细节。',
       '荒谬程度再推进一步：不要停在合理的批判或普通辩护。沿本题同一条逻辑，把一个原本只是代价、限制或缺陷的条件，郑重地升级为项目成立的必要条件。只越界一次，读者能跟上推理却发现结论过头；不得改写事实、胡乱跳跃或逃避教授的具体追问。',
+      '凝练要求：第一句直接给关键判断，第二句把这项判断推到过头的学术结论。只保留一个对象和一条推论，不解释同一件事两次，不写逐步展开的长从句，不补总结。每句尽量不超过40字。锋利来自判断，不来自歧视词、人身攻击或贬损群体。',
       '不要逐字复述整句教授问题；把它要你解释的点落实到回答。避免固定开头“我想讨论的是”、套路句“理论可以把项目抬高”和到处适用的泛泛总结。',
       '学科：'+discipline,'评论和回答只针对本学科对象，不用建筑词汇解释艺术作品或产品。','评委研究兴趣：'+criticInterest,'项目原题：'+project.slice(0,500),'评委当前问题：'+question.slice(0,600),
       plan?'本句问题的实际要求：'+plan.demand:'',plan?'必须在前两句直接回答的点：'+plan.answer:'',plan?'题目特有的论证矛盾：'+plan.case.premise:'',plan?'可用的具体比较与反例：'+plan.test+'；失败条件：'+plan.case.failure:'',
@@ -28,7 +29,7 @@
       '风格示范：三厘米不足以阻挡身体，却足以把经过重新定义为跨越；公共空间因此由谁需要抬脚、谁能直接通过来界定。示范只展示推演方式，当前题目没有三厘米或广场时绝不可借用这些对象。',
       '只输出玩家的答辩正文。'].filter(Boolean).join('\n');
   }
-  function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=180&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
+  function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=120&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
   function fallback({project,question,strategy,disciplineId,topic,previous=[]}){
     // These are complete alternative arguments, not random word substitutions.
     const p='「'+project+'」',q='「'+question.slice(0,70)+'」';

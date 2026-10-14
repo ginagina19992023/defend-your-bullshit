@@ -847,7 +847,7 @@ class BattleTests(unittest.TestCase):
         counter={'value':0}
         def respond(route):
             counter['value']+=1
-            route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':project+'：这是第'+str(counter['value'])+'种论证。我们计划对照原来的办法与改变后的使用者观看路径，记录具体行动、时间和重复体验。谁承担额外代价，谁都可以拒绝并要求修改。如果测试没有区别，就撤回它不可替代的判断。身体不负责替概念签到。'}))
+            route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':project+'：第'+str(counter['value'])+'种论证。计划对照并记录身体行动与重复体验：谁承担代价，谁有权拒绝；如果没有区别，就撤回判断并修改。'}))
         self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
         self.page.route('https://gen.pollinations.ai/**',respond)
         self.answer('这是之前写过但没有采用的自由回答。')

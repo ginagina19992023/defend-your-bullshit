@@ -1,7 +1,8 @@
 /* AI comments change the narration, never the rule-engine score. */
 (()=>{
   function prompt({discipline,object,project,question,answer,interest,reason,tags=[]}){
-    return ['你是虚构的学术讲评教授，写中文第三人称评委反应，45至90字，最多120字。',
+    return ['你是虚构的学术讲评教授，写中文第三人称评委反应，两句，35至65字，最多85字。',
+      '要辛辣，像抓住论证漏洞的评委：点出学生把什么偷换成了什么，或哪个代价被包装成意义，随后指出这个推论将学生自己置于怎样的矛盾。不要温吞复述或泛泛肯定，不以“值得研究”“深化概念”“重新审视”等套语结尾。仍须服从本地判定；有效的回答可以被带着保留地承认，不虚构漏洞。',
       '反馈必须回应学生刚才提出的具体论证和你的问题，不能只重复题目、评价文笔或泛泛表示有趣。',
       '先写被哪个具体判断触动，再写它怎样动摇或加强了教授原有的判断。可以出现迟疑、震惊或对自己专业与存在处境的怀疑，但须由学生实际论证推导；不要每次都存在危机。',
       '风格：严肃的学术评论中出现过度郑重的心理反应。不写段子、拟人笑话、包袱和金句，不给物体办理护照或升职，不嘲笑玩家。',
@@ -15,7 +16,7 @@
       '只输出反馈正文。'].join('\n');
   }
   function valid(text,{project,answer,disciplineId},language){
-    if(typeof text!=='string'||text.length<18||text.length>160||/<html|<!doctype|unauthorized|api key|gsk_/i.test(text))return false;
+    if(typeof text!=='string'||text.length<18||text.length>110||/<html|<!doctype|unauthorized|api key|gsk_/i.test(text))return false;
     if(language&&!language.valid(text,disciplineId))return false;
     // Short comments need a concrete lexical link, not a mandatory sixteen-character quotation.
     const terms=String(project+' '+answer).match(/[\u4e00-\u9fff]+/g)||[];
