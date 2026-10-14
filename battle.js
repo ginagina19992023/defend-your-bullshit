@@ -4,12 +4,6 @@
   const duration = 20;
   const order = ["opening", "move", "concept", "proof"];
   const labels = { opening: "拖一个开场", move: "拖一个动作", concept: "拖一个概念", proof: "拖证据或离谱理由" };
-  const parts = {
-    opening: ["这并不是一个物体", "我真正想处理的不是功能", "这个形式的脆弱性", "如果我们暂时拒绝效率", "这里的失败"],
-    move: ["暴露了", "延迟了", "重新组织了", "迫使我们面对", "把问题转译为"],
-    concept: ["观看者的身体协商", "公共性的临时边界", "材料自身的沉默", "被制度化的等待", "空间意义的生产条件"],
-    proof: ["因此它必须保持未完成。", "这也是我选择不解决它的原因。", "所以证据不是结果，而是过程。", "它需要以不舒服的方式存在。", "否则它就只剩下一个设计。"]
-  };
   const encounters = {
     pressure: { title: "等等，这一点还没有说清楚。", reason: "不适值首次达到 10，评委中断陈述，要求澄清当前论证。", lead: "请直接解释，不要再换一个更大的概念。" },
     admiration: { title: "这个概念有意思，能展开一点吗？", reason: "触发欣赏型追问：评委想了解概念如何在项目里成立。", lead: "这个判断有潜力，但我想知道它具体如何发生。" },
@@ -21,14 +15,6 @@
     power: "这个安排具体让谁受益，又排除了谁？你如何判断，而不是只宣称它具有公共性？",
     evidence: "你具体观察了什么、记录了哪些变化？这些证据如何支持你刚才的判断？",
     memory: "你引用的记忆或历史，具体改变了项目的哪个决定？请解释两者的联系。"
-  };
-  const sample = (items, count) => {
-    const shuffled = items.slice();
-    for (let i = shuffled.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled.slice(0, count);
   };
 
   function create() {
@@ -75,7 +61,7 @@
       if (isPending()) return;
       stopTimer();
       if (kind === "pressure") pressureTriggered = true;
-      active = { kind, professor, project, question: (options.previousAnswer ? "你刚才说「" + options.previousAnswer.slice(0,36) + (options.previousAnswer.length>36?"…":"") + "」。\n" : "") + encounters[kind].lead + "\n" + (options.followUp || followUps[options.topic] || options.question || "你最关键的判断是什么？请解释它如何体现在这个项目里，并给一个具体依据。") };
+      active = { kind, professor, project, topic: options.topic || "form", discipline: options.discipline || "architecture", question: (options.previousAnswer ? "你刚才说「" + options.previousAnswer.slice(0,36) + (options.previousAnswer.length>36?"…":"") + "」。\n" : "") + encounters[kind].lead + "\n" + (options.followUp || followUps[options.topic] || options.question || "你最关键的判断是什么？请解释它如何体现在这个项目里，并给一个具体依据。") };
       vocabulary = Array.isArray(options.vocabulary) ? options.vocabulary : null;
       grade = gradeAnswer;
       onResolve = callback;
@@ -171,11 +157,7 @@
       paused = false;
       remaining = duration * 1000;
       deadline = performance.now() + remaining;
-      tokens = Object.entries(parts).flatMap(([type, terms]) => sample(type === "concept" && vocabulary ? vocabulary : terms, type === "concept" ? 4 : 3).map(text => ({ text, type }))).concat([
-        { text: "我把长椅放到了屋顶上", type: "absurd", absurd: true },
-        { text: "这让我想起某次失败的终评", type: "absurd", absurd: true },
-        { text: "我们记录了三位使用者的停留时间", type: "proof" }
-      ]);
+      tokens = window.DYB_BATTLE_WORDS.make({discipline:active.discipline,topic:active.topic,project:active.project});
       $("battleStart").hidden = true;
       $("battleSubmit").hidden = false;
       $("battleSubmit").disabled = false;

@@ -14,6 +14,9 @@
   const state = {
     project: "",
     statement: "",
+    strategyDraft: null,
+    useGeneratedStrategy: true,
+    reviewSubmitting: false,
     round: 0,
     scores: { depth: 0, confidence: 0, substance: 0, discomfort: 0 },
     chosen: 0,
@@ -313,11 +316,13 @@
     if (oldWound) reasons.push("大师的名字触发旧评图记忆，不适 +2");
     if (steadied) reasons.push("稳住客户的表达，自信 +1，不适 -1");
 
+    const taste=window.DYB_CRITIC_TASTES.evaluate({bias:state.professor.bias,topic:question.topic,style,analysis:a,answer});
     return {
-      depth: clamp(depth, 0, 9),
-      confidence: clamp(confidence, 0, 9),
-      substance: clamp(substance, -2, 9),
-      discomfort: clamp(discomfort, 0, 10),
+      depth: Math.max(0,clamp(depth,0,9)+taste.delta.depth),
+      confidence: Math.max(0,clamp(confidence,0,9)+taste.delta.confidence),
+      substance: clamp(substance,-2,9)+taste.delta.substance,
+      discomfort: clamp(discomfort,0,10)+taste.delta.discomfort,
+      taste,
       tags,
       reason: reasons.map(reason=>reason.replace(/[。；\s]+$/g, "")).join("；") + "。",
       absurd: lucky ? reasons[reasons.length - 1] : ""
@@ -339,8 +344,12 @@
     $("reviewPresenceText").textContent=mood.note;
     $("moodLabel").textContent = mood.label;
     $("moodNote").textContent = mood.note;
+    $("reviewProject").textContent=state.project;
     $("reviewProfessor").textContent=state.professor?.name||"评委";
-    $("reviewBias").textContent=state.professor?.biasLabel||"";
+    const taste=window.DYB_CRITIC_TASTES.describe({bias:state.professor?.bias,topic:state.question?.topic});
+    const focus=pack().topics.find(t=>t.id===state.question?.topic)?.label||"具体论证";
+    $("reviewBias").textContent=taste.summary;
+    $("reviewFocus").textContent="本轮关注："+focus;
     $("biasLabel").textContent = state.professor?.biasLabel || "BIAS: undecided";
   }
 
@@ -416,18 +425,21 @@
       const title = document.createElement("strong");
       title.textContent = s.name;
       const description = document.createElement("span");
-      description.textContent = s.description;
+      description.textContent = strategyTarget(s);
       btn.append(title, description);
       btn.addEventListener("click", () => {
-        state.chosen = i;
-        $("strategyPreview").textContent=s.answer;
-        $("reviewPresenceText").textContent="你准备采用「"+s.name+"」。评委正等你把理由说清楚。";
-        updateChoice();
+        writeStrategy(i);
       });
       $("strategies").append(btn);
     });
+    const voiceButton=document.createElement("button");voiceButton.type="button";voiceButton.className="voice-choice"+(pack().strategies.length%2===0?" full-width":"");voiceButton.id="normalVoiceChoice";
+    const voiceTitle=document.createElement("strong");voiceTitle.textContent="长按语音回答";const voiceHint=document.createElement("span");voiceHint.textContent="说完点结束，再检查文字";voiceButton.append(voiceTitle,voiceHint);normalVoice.bind(voiceButton);$("strategies").append(voiceButton);
+    normalVoice.reset();
     state.chosen = 0;
-    $("strategyPreview").textContent=pack().strategies[0].answer;
+    state.reviewSubmitting=false;
+    $("rewriteStrategy").disabled=false;$("editStrategy").disabled=false;
+    $("strategyPreview").textContent="";
+    state.strategyDraft=null;
     $("customReply").open=false;
     $("reviewDock").hidden=false;
     updateChoice();
@@ -438,6 +450,7 @@
     $("submitDefense").disabled = false;
     $("submitDefense").textContent = "DEFEND YOUR PROJECT";
     show("defense");
+    writeStrategy(0);
   }
 
   function aiPrompt(answer, grading) {
@@ -493,14 +506,18 @@
   }
 
   async function submit() {
-    if ($("submitDefense").disabled || (professional() && !career.snapshot().active)) return;
+    if ($("submitDefense").disabled || state.reviewSubmitting || (professional() && !career.snapshot().active)) return;
+    state.reviewSubmitting=true;
+    document.querySelectorAll(".strategy,.voice-choice").forEach(button=>button.disabled=true);
+    $("rewriteStrategy").disabled=true;$("editStrategy").disabled=true;
     const choice = pack().strategies[state.chosen];
-    const custom = $("customAnswer").value.trim();
-    const answer = custom || choice.answer;
+    const custom = state.useGeneratedStrategy ? "" : $("customAnswer").value.trim();
+    const answer = custom || state.strategyDraft?.text || choice.answer;
+    writer.cancel();strategyVersion++;
     const beforeFace=$("professorFace").textContent;
     reaction.thinking({from:beforeFace,name:state.professor.name});
-    const grading = evaluate(answer, state.question, custom ? "manual" : choice.style);
-    for (const key of Object.keys(state.scores)) state.scores[key] += grading[key];
+    const grading = evaluate(answer,state.question,custom||state.strategyDraft?.source==="voice"?"manual":choice.style);
+    for (const key of Object.keys(state.scores)){state.scores[key]+=grading[key];if(key!=="substance")state.scores[key]=Math.max(0,state.scores[key]);}
 
     $("submitDefense").disabled = true;
     $("submitDefense").textContent = "PROFESSOR IS THINKING...";
@@ -509,15 +526,16 @@
     const localResponse = "你说「" + excerpt.slice(0,42) + (excerpt.length>42?"…":"") + "」。\n" + random(contradictionPool[mainTag]);
     const trigger = battle.pickTrigger(state.scores, grading);
     const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
-    const response = aiResponse || localResponse;
+    const response = [aiResponse||localResponse,grading.taste.reason].filter(Boolean).join("\n\n");
     $("submitDefense").textContent = trigger ? "已进入现实 BATTLE" : "答辩已提交";
     $("feedback").textContent = response;
     $("feedbackReason").textContent = grading.reason;
     $("submittedAnswer").textContent = answer;
     $("feedbackPoints").open=false;
     $("feedbackOriginal").open=false;
-    $("scoreChange").textContent = "DEPTH +" + grading.depth + "  CONFIDENCE +" + grading.confidence + "  SUBSTANCE " + (grading.substance >= 0 ? "+" : "") + grading.substance + "  DISCOMFORT +" + grading.discomfort + (aiResponse ? "  AI VARIATION ON" : "  LOCAL RULES");
-    state.history.push({ professor: state.professor.name, question: state.question.text, answer, grading, response, ai: Boolean(aiResponse) });
+    const signed=value=>(value>=0?"+":"")+value;
+    $("scoreChange").textContent="DEPTH "+signed(grading.depth)+"  CONFIDENCE "+signed(grading.confidence)+"  SUBSTANCE "+signed(grading.substance)+"  DISCOMFORT "+signed(grading.discomfort)+(aiResponse?"  AI VARIATION ON":"  LOCAL RULES");
+    state.history.push({ professor: state.professor.name, question: state.question.text, answer, grading, response, ai: Boolean(aiResponse), draftSource: custom ? "manual" : state.strategyDraft?.source || "preset" });
     $("feedbackBlock").hidden = false;
     $("nextRound").textContent = state.round === 2 ? "FINAL VERDICT" : "NEXT CRITIQUE";
     updateMood();
@@ -528,12 +546,12 @@
         const grading = evaluate(answer, state.question, "battle");
         return {
           scores: {
-            depth: Math.min(3, Math.floor(grading.depth / 2)),
-            confidence: Math.min(3, Math.floor(grading.confidence / 2)),
-            substance: clamp(grading.substance, -1, 3),
-            discomfort: Math.min(3, Math.floor(grading.discomfort / 2))
+            depth: Math.max(0,Math.min(3,Math.floor((grading.depth-grading.taste.delta.depth)/2))+grading.taste.delta.depth),
+            confidence: Math.max(0,Math.min(3,Math.floor((grading.confidence-grading.taste.delta.confidence)/2))+grading.taste.delta.confidence),
+            substance: clamp(grading.substance-grading.taste.delta.substance,-1,3)+grading.taste.delta.substance,
+            discomfort: Math.min(3,Math.floor((grading.discomfort-grading.taste.delta.discomfort)/2))+grading.taste.delta.discomfort
           },
-          reason: grading.reason
+          reason: [grading.reason,grading.taste.reason].filter(Boolean).join("\n")
         };
       }, result => {
         const oldFace=$("professorFace").textContent;
@@ -547,11 +565,11 @@
         passStatus();
         $("nextRound").disabled = false;
         reaction.resolve({to:$("professorFace").textContent,text:"评委听完你的补充，重新看了一眼项目。\n"+result.response});
-      }, { vocabulary: pack().vocabulary, topic: state.question.topic, question: state.question.text, previousAnswer: answer, followUp: questions.pick({pack:pack().id,project:state.project,topic:state.question.topic,round:state.round,answer,stage:"battle",scores:state.scores}).text });
+      }, { vocabulary: pack().vocabulary, discipline: pack().id, topic: state.question.topic, question: state.question.text, previousAnswer: answer, followUp: questions.pick({pack:pack().id,project:state.project,topic:state.question.topic,round:state.round,answer,stage:"battle",scores:state.scores}).text });
     }};
     $("reviewDock").hidden=true;
-    const reactionLead=grading.substance>=3&&grading.depth>=3?"评委若有所思：这个项目可能真的有点意思。":grading.discomfort>=6?"评委皱起眉头，重新审视你的说法。":grading.substance>=3?"评委停下笔，认真看了看你给的依据。":"评委沉默片刻，似乎还在等更明确的解释。";
-    const expression=grading.substance>=3&&grading.depth>=3?"o_o":grading.tags.includes("tooConceptual")?">:|":grading.tags.includes("tooHonest")?":-?":grading.substance>=3?":-)":":-/";
+    const reactionLead=grading.taste.kind==="pleased"?"评委听到自己感兴趣的侧面，身体往前倾了一点。":grading.taste.kind==="angry"?"评委发现你在跳过问题，眉头又紧了一点。":(grading.substance>=3&&grading.depth>=3?"评委若有所思：这个项目可能真的有点意思。":grading.discomfort>=6?"评委皱起眉头，重新审视你的说法。":grading.substance>=3?"评委停下笔，认真看了看你给的依据。":"评委沉默片刻，似乎还在等更明确的解释。");
+    const expression=grading.taste.kind==="angry"?">:|":grading.taste.kind==="pleased"?":-)":grading.substance>=3&&grading.depth>=3?"o_o":grading.tags.includes("tooConceptual")?">:|":grading.tags.includes("tooHonest")?":-?":grading.substance>=3?":-)":":-/";
     $("professorFace").textContent=expression;$("reviewFace").textContent=expression;
     $("reviewPresenceText").textContent=reactionLead;
     reaction.resolve({to:expression,text:reactionLead+"\n"+response,onContinue:enterBattle});
@@ -642,6 +660,64 @@
   }
 
   const battle = window.DYB_BATTLE.create();
+  let strategyVersion=0;
+  const writer=window.DYB_STRATEGY_WRITER.create({request:async(prompt,{signal,provider,model})=>{
+    if(provider==="ollama"){
+      const response=await fetch("http://localhost:11434/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model,prompt,stream:false}),signal});
+      if(!response.ok)throw Error("model unavailable");return String((await response.json()).response||"").trim();
+    }
+    const response=await fetch("https://text.pollinations.ai/"+encodeURIComponent(prompt)+"?model=openai&seed="+Math.floor(Math.random()*999999999),{signal,referrerPolicy:"no-referrer"});
+    if(!response.ok)throw Error("generation unavailable");return (await response.text()).trim();
+  }});
+  function strategyTarget(strategy){
+    const labels={experience:"身体体验",form:"形式决定",power:"公共权力",evidence:"证据缺口",memory:"记忆与时间"};
+    const topic=labels[state.question.topic]||"当前判断";
+    const goals={jargon:"从感知解释",deflect:"反问评判规则：",evidence:"给出验证方法：",honest:"承认具体限制：",erase:"比较删除之后：",balanced:"具体理由 + 方法："};
+    return (goals[strategy.style]||goals.balanced)+topic;
+  }
+  async function writeStrategy(index){
+    if(state.reviewSubmitting)return;
+    state.useGeneratedStrategy=true;
+    $("normalVoiceChoice")?.classList.remove("selected");
+    const version=++strategyVersion;state.chosen=index;state.strategyDraft=null;updateChoice();
+    const base=pack().strategies[index];
+    const strategy={...base,target:strategyTarget(base)};
+    $("strategyPreviewPanel").open=true;
+    $("strategyPreview").textContent="正在围绕「"+state.project+"」现编「"+strategy.name+"」……";
+    $("strategyDraftStatus").textContent=$("strategyMode").value==="ai"?"AI 正在现编 · "+strategy.target+"。":"离线话术编写中。";
+    $("submitDefense").disabled=true;$("submitDefense").textContent="话术正在生成…";
+    $("reviewPresenceText").textContent="你准备采用「"+strategy.name+"」。评委正等你把理由说清楚。";
+    const result=await writer.generate({project:state.project,question:state.question.text,strategy,discipline:pack().name,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
+    if(!result||version!==strategyVersion)return;
+    state.strategyDraft=result;$("strategyPreview").textContent=result.text;
+    $("strategyDraftStatus").textContent=result.source==="ai"?"AI 现编 · 可以重编或修改，提交这段文字参与评分。":result.unavailable?"AI 暂时未返回有效新话术，已切换为离线回答。":"离线回答 · 可重编或自行修改。";
+    $("submitDefense").disabled=false;$("submitDefense").textContent="提交这段回应";
+  }
+  $("customAnswer").addEventListener("input",()=>{
+    if(state.reviewSubmitting)return;
+    state.useGeneratedStrategy=false;
+    if($("customAnswer").value.trim()){
+      writer.cancel();strategyVersion++;
+      $("submitDefense").disabled=false;$("submitDefense").textContent="提交自己的回答";
+      $("strategyDraftStatus").textContent="提交时优先使用你填写的自由回答。";
+    }else if(!state.strategyDraft){writeStrategy(state.chosen)}
+  });
+  $("rewriteStrategy").addEventListener("click",()=>writeStrategy(state.chosen));
+  $("editStrategy").addEventListener("click",()=>{if(!state.strategyDraft)return;$("customReply").open=true;$("customAnswer").value=state.strategyDraft.text;state.useGeneratedStrategy=false;$("submitDefense").textContent="提交自己修改的回答";$("customAnswer").focus();});
+  let voiceBackup=null;
+  const normalVoice=window.DYB_NORMAL_VOICE.create({
+    canStart:()=>!state.reviewSubmitting&&!$("defense").hidden,
+    onStatus:text=>{$("strategyPreviewPanel").open=true;$("strategyDraftStatus").textContent=text;},
+    onBegin:()=>{voiceBackup={draft:state.strategyDraft,useGenerated:state.useGeneratedStrategy};writer.cancel();strategyVersion++;state.strategyDraft=null;state.useGeneratedStrategy=true;$("strategyPreviewPanel").open=true;$("strategyPreview").textContent="正在听你说…";$("reviewDock").hidden=true;$("submitDefense").disabled=true;document.querySelectorAll('.strategy').forEach(button=>button.classList.remove('selected'));$("normalVoiceChoice").classList.add('selected');},
+    onTranscript:text=>{$("strategyPreview").textContent=text;},
+    onFinish:(text,meta)=>{
+      if(meta.cancelled&&voiceBackup){state.strategyDraft=voiceBackup.draft;state.useGeneratedStrategy=voiceBackup.useGenerated;$("reviewDock").hidden=false;$("strategyPreview").textContent=state.strategyDraft?.text||"录制已取消，选择策略或自行回答。";$("strategyDraftStatus").textContent="录制已取消，保留原来的回答。";$("submitDefense").disabled=!(state.strategyDraft?.text||$("customAnswer").value.trim());$("submitDefense").textContent="提交这段回应";return;}
+      $("reviewDock").hidden=false;state.strategyDraft={text,source:"voice"};state.useGeneratedStrategy=true;$("strategyPreview").textContent=text||"没有识别出可提交的文字。你可以直接补充，或用手机键盘的麦克风输入。";
+      $("strategyDraftStatus").textContent=meta.cancelled?"录制已取消，可以重录或自行回答。":text?"语音已转为文字 · 可修改后提交。":"录音未能自动转写。请补充文字后再提交。";
+      $("submitDefense").disabled=!text;$("submitDefense").textContent="提交这段语音回答";
+      if(!text){$("customReply").open=true;$("customAnswer").focus();}
+    }
+  });
   const questions=window.DYB_QUESTIONS.create();
   const reaction=window.DYB_REACTION.create();
   const critics = window.DYB_CRITICS.create();

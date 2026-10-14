@@ -5,8 +5,8 @@
     architecture: {
       experience: `人在这里的第一步会走向哪里？你如何知道？|如果使用者不按你画的动线走，项目还成立吗？|你设计的是观看的图像，还是可以停留的地方？|身体接触材料时，和远处观看有什么不同？|轮椅使用者会经历同样的路径吗？|如果没有人坐下，这张长椅的公共性体现在哪里？|使用者抱怨这里不舒服，你会修改还是坚持？|雨天、夜晚和拥挤时，空间体验会怎样改变？`,
       form: `为什么要旋转这个体块，而不是改变入口位置？|这面墙删掉后，你失去的究竟是结构还是边界？|洞的大小由什么决定？再大一倍会怎样？|这三块石头的排列存在不能互换的理由吗？|亭子不遮阳，你保留屋顶的依据是什么？|模型很好看，构造节点如何实现？|如果结构工程师要求加一根柱子，你的概念会崩溃吗？|把材料换成最便宜的做法，你还剩下什么核心判断？`,
-      power: `谁能使用这个空间，谁只能从旁边经过？|谁负责维护你所谓自然生长的部分？|把长椅放到屋顶，是开放公共空间还是提高进入门槛？|你说共享，具体是谁有权拒绝别人的使用？|这条走廊原来的使用者同意你的改造吗？|如果管理者把这里锁起来，项目还有意义吗？|住户要求拆掉作品，你会如何回应？|业主愿意建设，却要求禁止某类人进入，你接不接受？`,
-      evidence: `你说改变了停留时间，具体记录了多久？|你的尺度选择来自人体数据还是模型比例？|除了照片，你有什么证据说明空间真的被使用？|如果对照测试显示改造前更好，你会如何解释？|你访问的三个人能代表哪些人，又不能代表谁？|现场观察和你的效果图在哪一点发生冲突？|评委现在要求看一个失败的原型，你能说明它教会了你什么吗？|施工预算削减一半，哪一项验证必须保留？`,
+      power: `谁能使用这个空间，谁只能从旁边经过？|谁负责维护你所谓自然生长的部分？|把长椅放到屋顶，是开放公共空间还是提高进入门槛？|你说共享，具体是谁有权拒绝别人的使用？|这条走廊原来的使用者同意你的改造吗？|如果管理者把这里锁起来，项目还有意义吗？|如果住户要求拆掉作品，你会如何回应？|如果业主愿意建设，却要求禁止某类人进入，你接不接受？`,
+      evidence: `你说改变了停留时间，具体记录了多久？|你的尺度选择来自人体数据还是模型比例？|除了照片，你有什么证据说明空间真的被使用？|如果对照测试显示改造前更好，你会如何解释？|你访问的三个人能代表哪些人，又不能代表谁？|现场观察和你的效果图在哪一点发生冲突？|评委现在要求看一个失败的原型，你能说明它教会了你什么吗？|如果施工预算削减一半，哪一项验证必须保留？`,
       memory: `场地原来的痕迹具体改变了哪个设计决定？|这面旧墙是历史证据，还是你喜欢的纹理？|地方居民讲的历史和档案不同，你相信哪一种？|拆掉原有建筑后，你如何谈保留记忆？|你说临时，具体多久之后会被拆除？|材料老化后，空间会更接近还是远离你的设想？|十年后没人记得你的概念，项目还能被理解吗？|一位居民指出你引用的故事不属于这里，你会如何修正？`
     },
     art: {
@@ -35,14 +35,56 @@
   for(const [pack,topics] of Object.entries(banks))for(const [topic,text] of Object.entries(topics))text.split('|').forEach((text,i)=>entries.push({id:`${pack}-${topic}-${i}`,pack,topic,text,dramatic:i>=6}));
   for(const [topic,text] of Object.entries(followUps))text.split('|').forEach((text,i)=>entries.push({id:`followup-${topic}-${i}`,pack:'any',topic,text,followup:true,dramatic:i>=4}));
   const clusters=[['椅','坐','停留'],['洞','墙','边界','入口'],['石头','材料','排列'],['屋顶','亭','遮阳'],['旋转','体块','形式'],['走廊','路径','动线'],['记忆','历史','旧','档案'],['影像','照片','观看'],['参与','观众','互动'],['数据','用户','授权'],['增长','留存','指标'],['AI','自动化','判断']];
+  // A high weight is not enough: reject questions that assert a feature the project never named.
+  const features=[
+    {ask:/旋转|体块|白色盒子/,has:/旋转|体块|盒子|十五度/},
+    {ask:/墙/,has:/墙/},
+    {ask:/孔洞|洞的大小|开[^。？]*洞/,has:/洞|孔/},
+    {ask:/长椅|椅子|座椅/,has:/长椅|椅子|座椅/},
+    {ask:/屋顶/,has:/屋顶|亭/},
+    {ask:/亭子|亭不遮阳/,has:/亭/},
+    {ask:/走廊/,has:/走廊/},
+    {ask:/入口位置|入口|这条动线/,has:/入口|门|动线|路径/},
+    {ask:/相框/,has:/相框|框/},
+    {ask:/循环影像|影像/,has:/影像|视频|电影/},
+    {ask:/声光设备/,has:/声音|音频|光|灯|影像|装置/},
+    {ask:/你留下的档案|档案中的|旧照片/,has:/档案|照片|文献|历史/},
+    {ask:/为什么必须做一个平台|平台、商家|平台控制/,has:/平台|市场|商家|交易/},
+    {ask:/关闭通知|关掉提醒/,has:/通知|提醒|推送/},
+    {ask:/上一个版本|上个版本|旧版本|老用户|旧用户|数据迁移/,has:/版本|迭代|升级|旧|老|迁移/},
+    {ask:/网络效应/,has:/网络|社交|平台|分享/},
+    {ask:/你引用的故事|故事的讲述者|私人故事|引用的记忆/,has:/故事|记忆|历史|档案|引用/},
+    {ask:/社区提供了材料/,has:/社区|共建/},
+    {ask:/这面旧墙|旧照片/,has:/旧|历史|过去|遗产/}
+  ];
+  function fitsProject(entry,project){return features.every(rule=>!rule.ask.test(entry.text)||rule.has.test(project))}
+  function generate(project,topic,seed,stage,answer){
+    if(!project.trim())return seed;
+    const title='「'+project.slice(0,180)+'」';
+    const operations=[[/删|拆|移除|去掉|取消/, '取消这个部分'],[/旋转|转动/, '改变朝向'],[/加|增|放|安置/, '增加这个部分'],[/开.*洞|孔/, '打开这个边界']];
+    const operation=operations.find(([pattern])=>pattern.test(project))?.[1]||'采用这个做法';
+    const prompts={
+      form:[`你在${title}中${operation}，具体改变了什么关系？如果保持原样，差别在哪里？`,`对于${title}，为什么必须${operation}？请比较一种达到相同目的的其他做法。`,`在${title}里，哪个决定不能被替换？请说清它与项目题目之间的联系。`],
+      experience:[`${title}实施前后，同一个人的行动会有什么不同？你准备怎样观察？`,`对于${title}，谁会最先感受到变化？请描述一次具体的使用，而不是一个抽象的身体。`,`如果有人完全不按你的预期使用${title}，你会修改哪个决定？`],
+      power:[`${title}让谁获得了选择，又让谁承担代价？如果双方都在评图现场，你怎么解释？`,`谁有权拒绝${title}？被影响的人是否可以要求恢复原样？`,`对于${title}，如果决定权仍然掌握在同一群人手里，你改变的到底是什么？`],
+      evidence:[`你怎么证明${title}中的这个决定有必要？请提出一项可以失败的对照验证。`,`如果测试显示${title}还不如保持原样，你愿意撤回哪一个判断？`,`关于${title}，哪一份具体依据支持你的核心判断，哪一部分仍只是设想？`],
+      memory:[`${title}改变之后，原有的经历由谁记得？你保留的是记忆，还是你对记忆的解释？`,`对于${title}，时间过去之后，哪个关系会改变？这如何影响你现在的决定？`,`如果当事人说${title}误解了他们的过去，你会改项目，还是改你的叙述？`]
+    };
+    const serial=Number(seed.match(/(\d+)$/)?.[1]||0);
+    const index=serial%3;
+    const question=(prompts[topic]||prompts.form)[index];
+    const pressure=serial>=6 ? ['如果客户要求明天就实施，','如果另一位使用者当场反对，'][serial%2] : '';
+    return (stage==='battle'&&answer ? '你刚才的回答还没有说清一个点。' : pressure)+question;
+  }
   function create({storage,random=()=>Math.random()}={}){
     let recent=[];const used=new Set();let usedTopics=[];
     try{storage=storage||window.localStorage;const saved=JSON.parse(storage.getItem('dyb-questions-v1')||'[]');if(Array.isArray(saved))recent=saved.filter(id=>typeof id==='string').slice(-60)}catch(_){}
     function reset(){used.clear();usedTopics=[]}
     function pick({pack,project='',topic='form',round=0,answer='',stage='normal',forceTopic=false,scores={}}){
-      let pool=entries.filter(e=>(e.pack===pack||(stage==='battle'&&e.pack==='any'))&&(!(stage==='battle'||forceTopic)||e.topic===topic)&&!used.has(e.id));
+      const eligible=entries.filter(e=>(e.pack===pack||(stage==='battle'&&e.pack==='any'))&&(!(stage==='battle'||forceTopic)||e.topic===topic)&&fitsProject(e,project));
+      let pool=eligible.filter(e=>!used.has(e.id));if(!pool.length)pool=eligible;
       const fresh=pool.filter(e=>!recent.includes(e.id));if(fresh.length)pool=fresh;
-      if(!pool.length)pool=entries.filter(e=>e.pack===pack);
+      if(!pool.length)pool=entries.filter(e=>e.pack==='any'&&e.topic===topic&&fitsProject(e,project));
       const context=project+' '+answer;
       const weighted=pool.map(e=>{
         let weight=e.topic===topic?5:1;
@@ -56,9 +98,9 @@
       for(const item of weighted){roll-=item.weight;if(roll<0){chosen=item.entry;break}}
       used.add(chosen.id);usedTopics.push(chosen.topic);recent.push(chosen.id);recent=recent.slice(-60);
       try{storage.setItem('dyb-questions-v1',JSON.stringify(recent))}catch(_){}
-      return {...chosen};
+      return {...chosen,text:generate(project,chosen.topic,chosen.id,stage,answer)};
     }
     return {pick,reset};
   }
-  window.DYB_QUESTIONS={create,entries};
+  window.DYB_QUESTIONS={create,entries,fitsProject,generate};
 })();

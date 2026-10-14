@@ -10,7 +10,7 @@ https://ginagina19992023.github.io/defend-your-bullshit/
 
 This is a static browser game. It works without a backend, build step or private API key.
 
-The core game is a local template/rule engine. Optional AI feedback can add variety, but the game always falls back to local rules when the free service is slow, unavailable or blocked.
+Scoring uses a local rule engine. AI strategy drafts and optional AI critic feedback add variety, but the game always falls back to local rules when the free service is slow, unavailable or blocked.
 
 Players can type their own project concept in architecture, contemporary art or startup pitches. The game can generate a statement and score custom defenses with explainable keyword rules. It does not deeply understand architecture; it playfully detects topic relevance, evidence, jargon, evasion, honesty, deletion and timed word-collage Battles.
 
@@ -78,11 +78,11 @@ After each settlement, unless the account closes, one event has a **45%** chance
 
 ## Question selection and immediate reactions
 
-`questions.js` contains **150 authored questions**: 40 each for architecture, contemporary art and startup presentations, plus 30 follow-ups across five critique topics. Normal rounds stay within the selected discipline. Weighted selection considers critic preference, project and previous-answer keywords, question-topic variety, round number and pressure. Later or tense rounds favor more dramatic dilemmas. Topic matching is a local keyword heuristic, not semantic AI. Imported professor questions remain intact; PRE evidence and memory cases constrain the chosen topic.
+`questions.js` contains **150 authored questions**: 40 each for architecture, contemporary art and startup presentations, plus 30 follow-ups across five critique topics. Normal rounds stay within the selected discipline. A hard compatibility filter first removes questions that assume absent features (for example rotated masses in a wall-deletion project). It uses the project title rather than trusting previous AI answers, and remains in force when question pools are exhausted. Generic titles receive general questions instead of invented objects. Weighted selection then considers critic preference, project and previous-answer keywords, question-topic variety, round number and pressure. Later or tense rounds favor more dramatic dilemmas. Topic matching is a local keyword heuristic, not semantic AI. Imported professor questions remain intact; PRE evidence and memory cases constrain the chosen topic.
 
 The last 60 question IDs persist across sessions in the current browser. Previously asked questions are excluded while fresh eligible questions remain; if a discipline/topic pool is exhausted, repetition is allowed. Each run also keeps its own used-question set. Battle follow-ups retain the current scoring topic and quote the previous response. Players read the critic's actual clarification request before the timer starts. Magnetic words are a response interface, never an instruction spoken by the critic.
 
-Normal defense options use a compact two-column grid. Preview the selected answer or open your own text response when needed. A sticky reviewer strip remains visible while selecting, and the submit action stays at the bottom of the viewport. Every normal submission and resolved Battle opens an immediate reaction dialog, changing expression and typing a short response. Continue can skip the typing animation; Escape also continues after grading. Reduced-motion preferences skip animated typing. A triggered Battle starts only after this reaction is dismissed, so no timer runs behind the modal.
+Normal defense options use a compact two-column grid. Preview the selected answer or open your own text response when needed. The current project title stays at the top of the sticky reviewer strip throughout defense and Battle. A sticky reviewer strip prominently shows a readable Chinese bias and the current topic while selecting, and the submit action stays at the bottom of the viewport. Every normal submission and resolved Battle opens an immediate reaction dialog, changing expression and typing a short response. Continue can skip the typing animation; Escape also continues after grading. Reduced-motion preferences skip animated typing. A triggered Battle starts only after this reaction is dismissed, so no timer runs behind the modal.
 
 Critic feedback, scoring rationale and the original answer appear in separate sections. Rationale and original text are collapsed initially, and the rationale is rendered once with normalized punctuation.
 
@@ -101,9 +101,11 @@ You can either choose a preset strategy, type your own defense, or face a surpri
 
 ## Reality Battle / 现实 Battle
 
-The existing magnetic-word collage is now a timed Battle that appears only when triggered, rather than staying visible throughout every critique. The original phrase bank and four slots (**Opening**, **Move**, **Concept**, **Proof / Chaos**) remain the core interaction.
+The existing magnetic-word collage is now a timed Battle that appears only when triggered, rather than staying visible throughout every critique. The topic-specific phrase bank and four slots (**Opening**, **Move**, **Concept**, **Proof / Chaos**) remain the core interaction.
 
 Before timing starts, the critic quotes the previous answer and asks a follow-up about the active topic (experience, form, power, evidence or memory). Their dialogue asks for clarification or an example, never for magnetic-word assembly. The question is visible while players prepare. Click **Start Response** to begin 20 seconds. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
+
+`battle-words.js` supplies a changing 16-tile pool for each discipline and critique topic: 4 relevant concepts, 4 alternative methods/evidence statements, 3 openings, 3 connecting phrases and 2 comic detours. Relevant concepts/methods are 50% of each pool; connectors are 37.5%; detours are 12.5%. Multiple concepts and methods can form valid responses. The previous pool is stored locally and fresh phrases are preferred, so identical random draws still produce different successive pools. These are content options, not a single canonical answer.
 
 The professor evaluates the final text against the current question: recognized topic concepts, concrete methods and evidence. Slot count, tile type compatibility and timeout do not award or subtract points. An empty answer loses confidence; nonempty Battle grading has no random sympathy bonus. Score changes and recognized expressions are shown explicitly. Local keyword scoring remains heuristic. Absurd tiles can produce a temporary walkout animation, but placement chaos does not change settlement scores.
 
@@ -155,6 +157,24 @@ Practical strategy:
 - Mix one concrete method with one conceptual reframing.
 - In a Battle, build a sentence with magnetic tiles before the 20-second timer expires.
 - Let the committee become a little uncomfortable, but not so uncomfortable that the review collapses.
+
+## Long-press normal voice answer
+
+The last strategy-grid slot is a long-press voice option. Hold for 350 ms (or use Enter/Space) to request browser microphone permission. A recording bar then provides elapsed time, End and Cancel. Speech-recognition results populate the strategy draft; End finalizes the transcript for editing and scoring as manual speech content, independent of the previously selected strategy. A local audio recording is available for playback when MediaRecorder is supported. Cancel preserves the previous draft. Recording stops on visibility loss, after two minutes, on question reset and on page exit; stale events cannot alter a new answer.
+
+Browser speech recognition is not available in every WeChat/webview version. In that case the recording remains local and the UI explicitly asks for keyboard microphone input or text; no automatic transcription is falsely claimed, and an empty transcript cannot be submitted. Audio files are not uploaded by this application or saved into persistent history.
+
+## Critic tastes
+
+Critic research interests interact with the chosen argumentative approach and the actual answer. A phenomenological explanation that addresses memory/time can earn extra depth and confidence and reduce discomfort for a memory/interested-experience critic. Evidence critics prefer a testable method; power critics can approve a grounded challenge to rules. A strategy label alone never earns the bonus: the answer must contain the corresponding content and address the current topic.
+
+Concept switching or evasive reframing can lose substance and add discomfort. These extra taste scores are applied after base grading and remain intact in Battle grading. The setup displays research interests and the current focus, without showing reward/anger conditions. A receipt appears in the critic's comment only when a taste is actually triggered; it is not duplicated in the general rationale.
+
+## AI strategy drafts
+
+Selecting a defense strategy now generates the player's actual answer from the project, current critic question, discipline and strategy direction. Phenomenology uses a concrete bodily experience; deflection reframes the actual question; evidence proposes a test without inventing measured results; honesty admits a specific limit; deletion names what is removed. AI strategy generation is enabled by default, independently of optional professor feedback. The public no-key endpoint is used unless Local Ollama is selected.
+
+The draft appears before submission. Players may request a new version or copy it into their own editable response. The submitted, scored and recorded answer is the actual draft or the player's edit, not the old fixed strategy text. Changing choices aborts earlier requests; a late reply cannot overwrite the latest choice. Generation times out after 12 seconds. Unrelated, repeated or unavailable service responses use clearly labeled offline alternative arguments; offline text is never labeled AI. Professor feedback remains local by default.
 
 ## Optional AI feedback
 
@@ -307,6 +327,8 @@ Install the Python `playwright` package and Chromium (or run `playwright install
 python -m unittest discover -s tests -v
 ```
 
-Run `node tests/career.test.js`, `node tests/play-session.test.js` and `node tests/questions.test.js` for economy, invitations and question-selection checks.
+Run `node tests/career.test.js`, `node tests/play-session.test.js` and `node tests/questions.test.js`, `node tests/strategy-writer.test.js` and `node tests/battle-words.test.js` for economy, invitations and question-selection checks.
 
 Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cover trigger conditions, word placement, timers, one-time scoring, seat changes, fictional names, mobile taps, the three-round game flow, career resume/reset, unlocked themes, PRE questions and complete multilingual share-card rendering.
+
+评委问题现在由本局项目题目、实际操作、当前关注点及追问阶段构建，不再直接复用题库原句；题库承担关注点与戏剧情境的抽样。问题生成目前是本地规则，不依赖公共 AI 接口。反应弹窗将回顾缩小淡化，核心评语用衬线字体，荒谬关键词放大标红。

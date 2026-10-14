@@ -73,6 +73,7 @@ class BattleTests(unittest.TestCase):
         ''')
         self.page.goto(self.url)
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
 
     def tearDown(self):
@@ -106,7 +107,7 @@ class BattleTests(unittest.TestCase):
         for kind in ['opening', 'move', 'concept', 'proof']:
             tile = self.page.locator(f'.chip[data-type="{kind}"]').first
             if kind == 'proof':
-                tile = self.page.get_by_role('button', name='我们记录了三位使用者的停留时间', exact=True)
+                tile = self.page.locator('.chip[data-type="proof"]').first
             slot = self.page.locator(f'.slot[data-slot="{kind}"]')
             if touch:
                 tile.tap()
@@ -161,7 +162,7 @@ class BattleTests(unittest.TestCase):
                 before = [int(value.split('/')[0]) for value in self.scores()]
                 self.page.click('#battleStart')
                 self.fill_collage()
-                self.assertIn('使用者的停留时间', self.page.locator('#battleSentence').inner_text())
+                self.assertTrue(self.page.locator('#battleSentence').inner_text())
                 self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 0')
                 self.page.click('#battleSubmit')
                 self.close_reaction()
@@ -315,6 +316,7 @@ class BattleTests(unittest.TestCase):
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.goto(self.url)
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
         self.begin()
         self.page.evaluate('Math.random = () => 0')
@@ -335,12 +337,14 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.screenshot(path='/tmp/dyb-club-desktop.png',full_page=True)
         self.page.locator('.accept-job').first.click()
         self.page.fill('#project','这份稿子必须保存')
         self.page.click('#backToClub')
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         expect(self.page.locator('#resumeJob')).to_be_visible()
         self.assertIn('Token 12',self.page.locator('#careerStrip').inner_text())
         self.page.click('#resumeJob')
@@ -388,6 +392,7 @@ class BattleTests(unittest.TestCase):
         self.page.evaluate("localStorage.setItem('dyb-play-v1',JSON.stringify({version:1,mode:'career',invitation:'accepted',history:[],sequence:0}))")
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.evaluate("""() => {
             const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
             saved.passes=4;saved.xp=45;saved.tier=2;saved.offers=[];
@@ -395,6 +400,7 @@ class BattleTests(unittest.TestCase):
         }""")
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.assertEqual(self.page.locator('.accept-job').count(),3)
         self.page.locator('.accept-job').nth(1).click()
         self.assertEqual(self.page.input_value('#pack'),'art')
@@ -412,6 +418,7 @@ class BattleTests(unittest.TestCase):
         # Persistent reload creates a fresh board; then insert the required PRE in its first offer.
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.evaluate("""() => {
             const saved=JSON.parse(localStorage.getItem('dyb-career-v1'));
             saved.offers[0].scenario=DYB_CAREER.scenarios.find(s=>s.id==='evidence');
@@ -419,6 +426,7 @@ class BattleTests(unittest.TestCase):
         }""")
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.begin()
         self.assertIn('依据',self.page.locator('#question').inner_text())
         self.assertEqual(self.scores(),['0/8','0/8','0/4','1/15'])
@@ -454,6 +462,7 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('dyb-career-v1')).tokens"),18)
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         expect(self.page.locator('#setup')).to_be_visible()
 
     def test_accept_invitation_and_switch_back_preserves_career(self):
@@ -479,6 +488,7 @@ class BattleTests(unittest.TestCase):
         expect(self.page.locator('#welcome')).to_be_visible()
         self.assertFalse(self.page.locator('#setup').is_visible())
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         expect(self.page.locator('#setup')).to_be_visible()
         self.assertFalse(self.page.locator('#helpDialog').is_visible())
         self.assertFalse(self.page.locator('#aiProvider').is_visible())
@@ -495,6 +505,7 @@ class BattleTests(unittest.TestCase):
         self.page.set_viewport_size({'width':390,'height':844})
         self.page.goto(self.url)
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > innerWidth'))
         self.page.screenshot(path='/tmp/dyb-settings-mobile.png',full_page=True)
 
@@ -545,6 +556,7 @@ class BattleTests(unittest.TestCase):
         }""")
         self.page.reload()
         self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.begin()
         self.page.evaluate("""() => testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:1,confidence:1,substance:1,discomfort:0},reason:answer}),result=>window.voiceResult=result)""")
         self.page.click('#battleStart')
@@ -599,7 +611,7 @@ class BattleTests(unittest.TestCase):
         self.begin()
         self.page.set_viewport_size({'width':390,'height':844})
         self.page.locator('.strategy').last.click()
-        self.assertFalse(self.page.locator('.strategy span').last.is_visible())
+        self.assertTrue(self.page.locator('.strategy span').last.is_visible())
         self.assertTrue(self.page.locator('#reviewFace').inner_text())
         rect=self.page.locator('#submitDefense').bounding_box()
         self.assertGreaterEqual(rect['y'],0)
@@ -613,6 +625,124 @@ class BattleTests(unittest.TestCase):
         self.assertTrue(self.page.locator('#reactionAccessible').text_content())
         self.page.click('#reactionContinue')
         expect(self.page.locator('#reactionDialog')).to_be_hidden()
+
+
+    def test_selected_strategy_uses_fresh_ai_draft_and_submits_that_text(self):
+        self.begin()
+        project=self.page.input_value('#project')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='ai'")
+        counter={'value':0}
+        def respond(route):
+            counter['value']+=1
+            route.fulfill(status=200,body=project+'：这是第'+str(counter['value'])+'种论证。我们从身体的观看路径出发，解释这次具体操作如何改变使用者的行动。先观察与记录，再讨论它的具身经验，概念可以负责加班，但不能替身体签到。')
+        self.page.route('https://text.pollinations.ai/**',respond)
+        self.answer('这是之前写过但没有采用的自由回答。')
+        self.page.locator('.strategy').first.click()
+        expect(self.page.locator('#strategyDraftStatus')).to_contain_text('AI 现编')
+        first=self.page.locator('#strategyPreview').inner_text()
+        self.assertIn(project,first)
+        self.page.click('#rewriteStrategy')
+        expect(self.page.locator('#strategyPreview')).not_to_have_text(first)
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
+        final=self.page.locator('#strategyPreview').inner_text()
+        self.page.click('#submitDefense')
+        expect(self.page.locator('#reactionDialog')).to_be_visible()
+        self.page.click('#reactionContinue')
+        self.assertEqual(self.page.locator('#submittedAnswer').text_content(),final)
+        self.assertNotIn('这不是单纯',final)
+
+    def test_new_selection_discards_late_ai_draft(self):
+        self.begin()
+        self.page.locator('#strategyMode').evaluate("el=>el.value='ai'")
+        self.page.route('https://text.pollinations.ai/**',lambda route:route.fulfill(status=503,body='unavailable'))
+        self.page.locator('.strategy').first.click()
+        expect(self.page.locator('#strategyDraftStatus')).to_contain_text('离线回答')
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
+        self.assertIn(self.page.input_value('#project'),self.page.locator('#strategyPreview').inner_text())
+
+
+    def test_current_project_remains_visible_while_selecting_and_scrolling(self):
+        self.begin()
+        project=self.page.input_value('#project')
+        expect(self.page.locator('#reviewProject')).to_have_text(project)
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.page.locator('.strategy').last.click()
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
+        self.page.evaluate('window.scrollBy(0,600)')
+        title=self.page.locator('#reviewProject').bounding_box()
+        self.assertGreaterEqual(title['y'],0)
+        self.assertLess(title['y']+title['height'],844)
+        expect(self.page.locator('#reviewProject')).to_have_text(project)
+
+
+    def test_taste_changes_scores_and_is_disclosed_only_in_triggered_feedback(self):
+        self.page.add_init_script("""Object.defineProperty(window,'DYB_CRITICS',{configurable:true,set(module){
+          const cast=module.create;
+          module.create=(...args)=>{const critics=cast(...args);const original=critics.cast;critics.cast=prof=>({...original(prof),bias:'memory',topic:'memory',preference:{depth:0,confidence:0,substance:0,discomfort:0}});critics.replace=()=>null;return critics};
+          Object.defineProperty(window,'DYB_CRITICS',{value:module});
+        }})""")
+        self.page.reload()
+        self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
+        self.begin()
+        self.assertNotIn('加分',self.page.locator('#reviewBias').inner_text())
+        self.assertEqual(self.page.locator('.taste-details').count(),0)
+        self.answer('我们用身体感知旧墙的痕迹，比较记忆和时间如何改变地方的观看路径。不是简单怀旧，而是记录参与者的行动。')
+        self.page.click('#submitDefense')
+        self.page.click('#reactionContinue')
+        self.assertEqual(self.page.locator('#feedback').inner_text().count('命中评委偏好'),1)
+        self.assertNotIn('命中评委偏好',self.page.locator('#feedbackReason').text_content())
+        self.page.click('#nextRound')
+        self.answer('我们不必回答时间的问题，换个概念就好了。')
+        self.page.click('#submitDefense')
+        self.page.click('#reactionContinue')
+        expect(self.page.locator('#feedback')).to_contain_text('触怒偏好')
+        expect(self.page.locator('#feedback')).to_contain_text('不适 +2')
+
+
+    def test_long_press_voice_fills_last_strategy_cell_and_transcribes_to_draft(self):
+        self.page.add_init_script("""
+          window.normalMicStops=0;
+          Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:async()=>({getTracks:()=>[{stop(){normalMicStops++}}]})}});
+          window.MediaRecorder=class {static isTypeSupported(){return true}constructor(){this.state='inactive';this.mimeType='audio/webm'}start(){this.state='recording'}stop(){this.state='inactive';this.ondataavailable?.({data:new Blob(['audio'],{type:this.mimeType})});this.onstop?.()}};
+          window.SpeechRecognition=class {constructor(){window.normalSpeech=this}start(){}stop(){this.onend?.()}abort(){}};
+        """)
+        self.page.reload()
+        self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
+        self.begin()
+        expect(self.page.locator('#normalVoiceChoice')).to_be_visible()
+        self.assertEqual(self.page.locator('#strategies>button').count(),8)
+        self.page.locator('#normalVoiceChoice').hover()
+        self.page.mouse.down()
+        self.page.wait_for_timeout(450)
+        self.page.mouse.up()
+        expect(self.page.locator('#normalVoiceBar')).to_be_visible()
+        self.page.evaluate("normalSpeech.onresult({results:[[{transcript:'我们记录使用者的路径，比较材料、记忆与时间如何改变体验。'}]]})")
+        self.page.click('#normalVoiceFinish')
+        expect(self.page.locator('#normalVoiceBar')).to_be_hidden()
+        expect(self.page.locator('#strategyPreview')).to_have_text('我们记录使用者的路径，比较材料、记忆与时间如何改变体验。')
+        expect(self.page.locator('#normalVoiceAudio')).to_be_visible()
+        self.assertGreater(self.page.evaluate('normalMicStops'),0)
+        self.page.click('#submitDefense')
+        self.page.click('#reactionContinue')
+        self.assertEqual(self.page.locator('#submittedAnswer').text_content(),'我们记录使用者的路径，比较材料、记忆与时间如何改变体验。')
+
+    def test_denied_voice_permission_keeps_existing_draft(self):
+        self.page.add_init_script("Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:async()=>{throw new DOMException('denied','NotAllowedError')}}})")
+        self.page.reload()
+        self.page.click('#startGame')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
+        self.begin()
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
+        original=self.page.locator('#strategyPreview').inner_text()
+        self.page.locator('#normalVoiceChoice').hover()
+        self.page.mouse.down()
+        self.page.wait_for_timeout(450)
+        self.page.mouse.up()
+        expect(self.page.locator('#strategyDraftStatus')).to_contain_text('没有获得麦克风授权')
+        self.assertEqual(self.page.locator('#strategyPreview').inner_text(),original)
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
 
 
 if __name__ == '__main__':

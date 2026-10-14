@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
-  <link rel="stylesheet" href="./style.css?v=score-bar-20261014">
+  <link rel="stylesheet" href="./style.css?v=strategy-ai-20261014">
 </head>
 <body>
   <main class="paper">
@@ -99,7 +99,8 @@
 
 </dialog>
     <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
-            <label for="aiProvider">OPTIONAL AI FEEDBACK</label>
+            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。现编默认使用免费接口；选择本机模型时使用该模型。</p>
+            <label for="aiProvider">教授反馈 / OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
               <option value="pollinations">Free web AI / 微信可体验</option>
               <option value="local" selected>Local rules only / 最稳定</option>
@@ -168,7 +169,7 @@
         <span id="roundLabel">ROUND 1 / 3</span>
         <span id="professorLabel"></span>
       </div>
-      <div class="review-presence"><span id="reviewFace" aria-hidden="true">:-|</span><div><strong id="reviewProfessor"></strong><span id="reviewBias" class="bias-label"></span><p id="reviewPresenceText"></p></div></div>
+      <div class="review-presence"><div class="review-project"><span>本次演讲题目</span><strong id="reviewProject"></strong></div><div class="review-person"><span id="reviewFace" aria-hidden="true">:-|</span><div><strong id="reviewProfessor"></strong><div class="review-bias-block"><strong class="review-bias-label">评委偏好</strong><span id="reviewBias"></span><span id="reviewFocus"></span></div><p id="reviewPresenceText"></p></div></div></div>
       <div class="review-layout">
         <aside class="professor-card" aria-live="polite">
           <div id="professorFace" class="professor-face">:-|</div>
@@ -194,12 +195,13 @@
       <label>选择你的回应方式</label>
       <div id="strategies"></div>
 
-      <details class="strategy-answer"><summary>查看当前策略将说出的回答</summary><p id="strategyPreview"></p></details>
+      <details id="strategyPreviewPanel" class="strategy-answer"><summary>这次准备这样说</summary><p id="strategyDraftStatus" class="sub" role="status"></p><p id="strategyPreview"></p><audio id="normalVoiceAudio" controls hidden aria-label="你的原声录音"></audio><div class="actions compact"><button id="rewriteStrategy" class="outline mini" type="button">再现编一段</button><button id="editStrategy" class="outline mini" type="button">自己修改</button></div></details>
       <details id="customReply"><summary>自己回答 / 自由输入</summary><label for="customAnswer">你的回答（填写后优先使用）</label>
       <textarea id="customAnswer" placeholder="你可以写材料、方法、实验、现场观察，也可以承认自己其实不知道……"></textarea>
       <p class="sub">自由输入可以玩。系统会看它是否回应问题、是否有证据、是否过度黑话、是否回避，以及是否触发教授的荒谬矛盾逻辑。不适升高、概念受到欣赏，或随机突发追问，都可能触发现实 Battle。</p>
 
       </details>
+      <div id="normalVoiceBar" class="voice-record-bar" hidden role="status"><span class="voice-pulse" aria-hidden="true"></span><strong>录制中 <span id="normalVoiceTime">00:00</span></strong><button id="normalVoiceFinish" type="button">结束</button><button id="normalVoiceCancel" class="outline" type="button">取消</button></div>
       <div id="reviewDock" class="actions review-dock">
         <button id="submitDefense" type="button">DEFEND YOUR PROJECT</button>
       </div>
@@ -212,7 +214,7 @@
         <h2 id="battleTitle" tabindex="-1">现实 Battle</h2>
         <p id="battleReason"></p>
         <blockquote id="battleQuestion"></blockquote>
-        <p id="battleIntro" class="sub">先读评委的问题。准备好后点击开始，你有 20 秒回应当前问题：可以拼词、补充文字，或直接输入。评委看回答里的要点，不数填对了几个槽。超时按最终回答结算。</p>
+        <p id="battleIntro" class="sub">先读评委的问题。准备好后点击开始，你有 20 秒回应当前问题：可以拼词、补充文字，或直接输入。词库会围绕这个问题变化，有几种可行论证；评委看回答里的要点，不数填对了几个槽。超时按最终回答结算。</p>
         <div id="battleLive" hidden>
           <div class="battle-clock">
             <span>拼贴倒计时 <strong id="battleTimer" role="timer">20 秒</strong></span>
@@ -290,15 +292,19 @@
     <div class="crumb">?</div>
   </main>
   <dialog id="reactionDialog" class="reaction-dialog" aria-labelledby="reactionName"><p class="eyebrow">THE PANEL REACTS / 评委反应</p><h2 id="reactionName"></h2><div id="reactionFace" aria-hidden="true">:-|</div><p id="reactionText" aria-hidden="true"></p><p id="reactionAccessible" class="visually-hidden"></p><button id="reactionContinue" type="button">知道了 / 继续</button></dialog>
-  <script src="./questions.js?v=score-bar-20261014"></script><script src="./reaction.js?v=score-bar-20261014"></script>
-  <script src="./packs.js?v=score-bar-20261014"></script>
-  <script src="./battle.js?v=score-bar-20261014"></script>
-  <script src="./critics.js?v=score-bar-20261014"></script>
-  <script src="./share-card.js?v=score-bar-20261014"></script>
-  <script src="./career.js?v=score-bar-20261014"></script>
-  <script src="./career-ui.js?v=score-bar-20261014"></script>
-  <script src="./play-session.js?v=score-bar-20261014"></script>
-  <script src="./game.js?v=score-bar-20261014"></script>
+  <script src="./normal-voice.js?v=strategy-ai-20261014"></script>
+  <script src="./critic-tastes.js?v=strategy-ai-20261014"></script>
+  <script src="./strategy-writer.js?v=strategy-ai-20261014"></script>
+  <script src="./questions.js?v=strategy-ai-20261014"></script><script src="./reaction.js?v=strategy-ai-20261014"></script>
+  <script src="./packs.js?v=strategy-ai-20261014"></script>
+  <script src="./battle-words.js?v=strategy-ai-20261014"></script>
+  <script src="./battle.js?v=strategy-ai-20261014"></script>
+  <script src="./critics.js?v=strategy-ai-20261014"></script>
+  <script src="./share-card.js?v=strategy-ai-20261014"></script>
+  <script src="./career.js?v=strategy-ai-20261014"></script>
+  <script src="./career-ui.js?v=strategy-ai-20261014"></script>
+  <script src="./play-session.js?v=strategy-ai-20261014"></script>
+  <script src="./game.js?v=strategy-ai-20261014"></script>
 </body>
 </html>
 
