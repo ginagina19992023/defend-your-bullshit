@@ -14,6 +14,7 @@
     [/待办.*待办/,'startup','用户要完成任务，产品却先要求管理管理任务的任务','比较新增这一层前后的操作步骤和任务完成','效率没有提高，效率的管理层增加了']
   ];
   function drafts(id,{project,question,strategy,topic='form'}){
+    if(window.DYB_QUESTION_ARGUMENTS)return window.DYB_QUESTION_ARGUMENTS.drafts({project,question,strategy,topic,disciplineId:id});
     const language=window.DYB_DISCIPLINE_LANGUAGE;if(!language)return null;
     const p=language.profile(id),title='「'+project+'」';
     const match=cases.find(([pattern,discipline])=>discipline===id&&pattern.test(project));

@@ -2,6 +2,7 @@
 Requires the Python playwright package and a Chromium executable.
 """
 import functools
+import json
 import http.server
 import os
 from pathlib import Path
@@ -72,6 +73,7 @@ class BattleTests(unittest.TestCase):
           });
         ''')
         self.page.goto(self.url)
+        self.page.evaluate("window.DYB_AI_CONFIG.endpoint=''")
         self.page.click('#startGame')
         self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
@@ -452,6 +454,7 @@ class BattleTests(unittest.TestCase):
         self.page.set_default_timeout(5000)
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.goto(self.url)
+        self.page.evaluate("window.DYB_AI_CONFIG.endpoint=''")
         self.page.click('#startGame')
         self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.page.locator('#aiProvider').evaluate("element => element.value = 'local'")
@@ -641,6 +644,7 @@ class BattleTests(unittest.TestCase):
 
     def test_welcome_help_and_optional_corner_settings(self):
         self.page.goto(self.url)
+        self.page.evaluate("window.DYB_AI_CONFIG.endpoint=''")
         expect(self.page.locator('#welcome')).to_be_visible()
         self.assertFalse(self.page.locator('#setup').is_visible())
         self.page.click('#startGame')
@@ -660,6 +664,7 @@ class BattleTests(unittest.TestCase):
         self.assertFalse(self.page.locator('#optionalDock').is_visible())
         self.page.set_viewport_size({'width':390,'height':844})
         self.page.goto(self.url)
+        self.page.evaluate("window.DYB_AI_CONFIG.endpoint=''")
         self.page.click('#startGame')
         self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > innerWidth'))
@@ -693,7 +698,8 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('battleResults[1].scores'),result['scores'])
 
     def test_unanchored_ai_poetry_falls_back_to_relevant_local_feedback(self):
-        self.page.route('https://text.pollinations.ai/**',lambda route:route.fulfill(status=200,body='若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。'))
+        self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
+        self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':'若无人审视，那剧烈航向的空洞仅剩我靠近屋顶长椅的碎影。'})))
         self.begin()
         self.page.locator('#aiProvider').evaluate("el=>el.value='pollinations'")
         self.answer('我们记录了使用者路径，并通过测试比较改动前后的时间。')
@@ -782,6 +788,34 @@ class BattleTests(unittest.TestCase):
         expect(self.page.locator('#reactionDialog')).to_be_hidden()
 
 
+    def test_unconfigured_online_ai_uses_question_bound_offline_answer_without_legacy_requests(self):
+        requests=[]
+        self.page.on('request',lambda request:requests.append(request.url))
+        self.page.locator('#strategyMode').evaluate("el=>el.value='ai'")
+        self.begin()
+        expect(self.page.locator('#strategyDraftStatus')).to_contain_text('在线 AI 尚未连接')
+        self.assertFalse(any('text.pollinations.ai' in url for url in requests))
+        self.assertFalse(any('gen.pollinations.ai' in url for url in requests))
+        answer=self.page.locator('#strategyPreview').inner_text()
+        self.assertIn(self.page.locator('#reviewProject').inner_text(),answer)
+        expect(self.page.locator('#submitDefense')).to_be_enabled()
+
+    def test_ai_connection_controls_test_new_api_and_report_invalid_authorization(self):
+        self.page.click('#optionalToggle')
+        self.page.locator('.ai-connection-settings summary').click()
+        self.page.fill('#aiAppKey','pk_testfixture')
+        seen=[]
+        def respond(route):
+            seen.append(route.request.url)
+            route.fulfill(status=401,content_type='application/json',body='{"error":"unauthorized"}')
+        self.page.route('https://gen.pollinations.ai/**',respond)
+        self.page.click('#testAiConnection')
+        expect(self.page.locator('#aiConnectionStatus')).to_contain_text('接口授权无效')
+        self.assertTrue(seen)
+        self.assertTrue(all(url=='https://gen.pollinations.ai/v1/chat/completions' for url in seen))
+        self.assertNotIn('pk_testfixture',self.page.evaluate('JSON.stringify(localStorage)'))
+        self.page.locator('[data-close="optionalDialog"]').click()
+
     def test_selected_strategy_uses_fresh_ai_draft_and_submits_that_text(self):
         self.begin()
         project=self.page.input_value('#project')
@@ -789,8 +823,9 @@ class BattleTests(unittest.TestCase):
         counter={'value':0}
         def respond(route):
             counter['value']+=1
-            route.fulfill(status=200,body=project+'：这是第'+str(counter['value'])+'种论证。我们从身体的观看路径出发，解释这次具体操作如何改变使用者的行动。先观察与记录，再讨论它的具身经验，概念可以负责加班，但不能替身体签到。')
-        self.page.route('https://text.pollinations.ai/**',respond)
+            route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':project+'：这是第'+str(counter['value'])+'种论证。我们计划对照原来的办法与改变后的使用者观看路径，记录具体行动、时间和重复体验。谁承担额外代价，谁都可以拒绝并要求修改。如果测试没有区别，就撤回它不可替代的判断。身体不负责替概念签到。'}))
+        self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
+        self.page.route('https://gen.pollinations.ai/**',respond)
         self.answer('这是之前写过但没有采用的自由回答。')
         self.page.locator('.strategy').first.click()
         expect(self.page.locator('#strategyDraftStatus')).to_contain_text('AI 现编')
@@ -809,7 +844,8 @@ class BattleTests(unittest.TestCase):
     def test_new_selection_discards_late_ai_draft(self):
         self.begin()
         self.page.locator('#strategyMode').evaluate("el=>el.value='ai'")
-        self.page.route('https://text.pollinations.ai/**',lambda route:route.fulfill(status=503,body='unavailable'))
+        self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
+        self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=503,body='unavailable'))
         self.page.locator('.strategy').first.click()
         expect(self.page.locator('#strategyDraftStatus')).to_contain_text('离线回答')
         expect(self.page.locator('#submitDefense')).to_be_enabled()

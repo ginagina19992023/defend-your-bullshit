@@ -422,16 +422,8 @@
   }
 
   async function fetchPollinations(prompt) {
-    const url = "https://text.pollinations.ai/" + encodeURIComponent(prompt) + "?model=openai&seed=" + Math.floor(Math.random() * 999999);
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 16000);
-    try {
-      const res = await fetch(url, { signal: controller.signal, referrerPolicy: "no-referrer" });
-      if (!res.ok) throw new Error("Pollinations returned " + res.status);
-      return (await res.text()).trim();
-    } finally {
-      clearTimeout(timeout);
-    }
+    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),25000);
+    try{return await onlineClient.request(prompt,{signal:controller.signal})}finally{clearTimeout(timeout)}
   }
 
   async function fetchOllama(prompt) {
@@ -604,13 +596,22 @@
 
   const battle = window.DYB_BATTLE.create();
   let strategyVersion=0;
+  const onlineClient=window.DYB_AI_CLIENT.create({getConfig:()=>({
+    endpoint:$("aiEndpoint").value.trim()||window.DYB_AI_CONFIG.endpoint,
+    appKey:$("aiAppKey").value.trim()||window.DYB_AI_CONFIG.appKey,
+    model:$("onlineModel").value.trim()||window.DYB_AI_CONFIG.model
+  })});
+  $("testAiConnection").addEventListener("click",async()=>{
+    const button=$("testAiConnection"),status=$("aiConnectionStatus");button.disabled=true;status.textContent="正在测试在线连接……";
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);
+    try{await onlineClient.request("只回复：连接成功。",{signal:controller.signal});status.textContent="连接成功，可以尝试在线生成答辩。"}catch(error){status.textContent=error.name==="AbortError"?"在线连接超过25秒未完成。":error.message}finally{clearTimeout(timeout);button.disabled=false}
+  });
   const writer=window.DYB_STRATEGY_WRITER.create({request:async(prompt,{signal,provider,model})=>{
     if(provider==="ollama"){
       const response=await fetch("http://localhost:11434/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model,prompt,stream:false}),signal});
       if(!response.ok)throw Error("model unavailable");return String((await response.json()).response||"").trim();
     }
-    const response=await fetch("https://text.pollinations.ai/"+encodeURIComponent(prompt)+"?model=openai&seed="+Math.floor(Math.random()*999999999),{signal,referrerPolicy:"no-referrer"});
-    if(!response.ok)throw Error("接口返回 HTTP "+response.status);return (await response.text()).trim();
+    return onlineClient.request(prompt,{signal});
   }});
   function strategyTarget(strategy){
     const topic=pack().topics.find(item=>item.id===state.question.topic)?.label||"当前判断";

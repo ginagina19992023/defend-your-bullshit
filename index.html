@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
-  <link rel="stylesheet" href="./style.css?v=satire-20261014">
+  <link rel="stylesheet" href="./style.css?v=free-groq-20261014">
 </head>
 <body>
   <main class="paper">
@@ -99,13 +99,19 @@
 
 </dialog>
     <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
-            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。现编使用第三方公共接口，可能超时或不可访问；本地回退会注明原因。微信可访问游戏，但不保证接口或语音转写可用。选择本机模型时使用该模型。</p>
+            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。已接免费在线模型，无需玩家填写 key；超时或额度用尽时使用离线回答，并注明来源。语音转写仍取决于浏览器支持。</p>
             <label for="aiProvider">教授反馈 / OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
-              <option value="pollinations">公共 AI / 联网实验功能</option>
+              <option value="pollinations">在线 AI / 免费服务后端</option>
               <option value="local" selected>Local rules only / 最稳定</option>
               <option value="ollama">Local Ollama / 本机模型</option>
             </select>
+            <details class="ai-connection-settings"><summary>连接在线 AI</summary>
+              <label for="aiEndpoint">免费 AI 后端地址</label><input id="aiEndpoint" type="url" placeholder="https://你的服务地址/api/defence" autocomplete="off">
+              <label for="aiAppKey">其他已有服务的公开应用 key（可选，Groq 留空）</label><input id="aiAppKey" type="password" placeholder="pk_…" autocomplete="off"><p class="sub">Groq 的私密 key 配置在服务端，这里不要填写。此项只兼容已有的公开应用授权，输入不保存到浏览器存档。</p>
+              <label for="onlineModel">在线模型</label><input id="onlineModel" type="text" value="openai/gpt-oss-120b" autocomplete="off">
+              <button id="testAiConnection" class="outline mini" type="button">测试连接</button><p id="aiConnectionStatus" class="sub" role="status">本游戏已停止调用旧免授权接口。配置有效授权后，才能生成在线回答。</p>
+            </details>
             <div class="model-row">
               <label for="ollamaModel">OLLAMA MODEL</label>
               <input id="ollamaModel" type="text" value="llama3.1" aria-label="Ollama model name">
@@ -304,23 +310,26 @@
     <div class="crumb">?</div>
   </main>
   <dialog id="reactionDialog" class="reaction-dialog" aria-labelledby="reactionName"><p class="eyebrow">THE PANEL REACTS / 评委反应</p><h2 id="reactionName"></h2><div id="reactionFace" aria-hidden="true">:-|</div><p id="reactionText" aria-hidden="true"></p><p id="reactionAccessible" class="visually-hidden"></p><div class="reaction-actions"><button id="reactionDetails" class="outline" type="button">查看详情</button><button id="reactionContinue" type="button">进入下一问</button></div></dialog>
-  <script src="./normal-voice.js?v=satire-20261014"></script>
-  <script src="./critic-tastes.js?v=satire-20261014"></script>
-  <script src="./discipline-language.js?v=satire-20261014"></script>
-  <script src="./satirical-drafts.js?v=satire-20261014"></script>
-  <script src="./strategy-writer.js?v=satire-20261014"></script>
-  <script src="./questions.js?v=satire-20261014"></script><script src="./reaction.js?v=satire-20261014"></script>
-  <script src="./packs.js?v=satire-20261014"></script>
-  <script src="./battle-words.js?v=satire-20261014"></script>
-  <script src="./battle.js?v=satire-20261014"></script>
-  <script src="./critics.js?v=satire-20261014"></script>
-  <script src="./share-card.js?v=satire-20261014"></script>
-  <script src="./career.js?v=satire-20261014"></script>
-  <script src="./career-ui.js?v=satire-20261014"></script>
-  <script src="./play-session.js?v=satire-20261014"></script>
-  <script src="./project-drawings.js?v=satire-20261014"></script>
-  <script src="./review-outcomes.js?v=satire-20261014"></script>
-  <script src="./game.js?v=satire-20261014"></script>
+  <script src="./normal-voice.js?v=free-groq-20261014"></script>
+  <script src="./critic-tastes.js?v=free-groq-20261014"></script>
+  <script src="./ai-config.js?v=free-groq-20261014"></script>
+  <script src="./ai-client.js?v=free-groq-20261014"></script>
+  <script src="./discipline-language.js?v=free-groq-20261014"></script>
+  <script src="./question-arguments.js?v=free-groq-20261014"></script>
+  <script src="./satirical-drafts.js?v=free-groq-20261014"></script>
+  <script src="./strategy-writer.js?v=free-groq-20261014"></script>
+  <script src="./questions.js?v=free-groq-20261014"></script><script src="./reaction.js?v=free-groq-20261014"></script>
+  <script src="./packs.js?v=free-groq-20261014"></script>
+  <script src="./battle-words.js?v=free-groq-20261014"></script>
+  <script src="./battle.js?v=free-groq-20261014"></script>
+  <script src="./critics.js?v=free-groq-20261014"></script>
+  <script src="./share-card.js?v=free-groq-20261014"></script>
+  <script src="./career.js?v=free-groq-20261014"></script>
+  <script src="./career-ui.js?v=free-groq-20261014"></script>
+  <script src="./play-session.js?v=free-groq-20261014"></script>
+  <script src="./project-drawings.js?v=free-groq-20261014"></script>
+  <script src="./review-outcomes.js?v=free-groq-20261014"></script>
+  <script src="./game.js?v=free-groq-20261014"></script>
 </body>
 </html>
 

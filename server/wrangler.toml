@@ -1,0 +1,8 @@
+name = "academic-mouthpiece-ai"
+main = "groq-worker.mjs"
+compatibility_date = "2026-10-14"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGIN = "https://ginagina19992023.github.io"
+GROQ_MODEL = "openai/gpt-oss-120b"

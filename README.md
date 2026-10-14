@@ -22,7 +22,7 @@ All reviewers are fictional. Do not add real faculty, real institutional brandin
 2. After finishing your first game (pass or fail), receive a club invitation. Accept to enter Career Mode, or decline and keep playing Simple Mode indefinitely.
 3. Type the client project, or click the random project button.
 4. Optionally choose an AI feedback mode:
-   - **Free web AI**: tries a public no-key text endpoint, suitable for WeChat sharing but not guaranteed.
+   - **Online AI**: already connected to Groq Free Plan through a secret-backed HTTPS service; players do not need an API key. See [AI_SETUP.md](./AI_SETUP.md).
    - **Local rules only**: most stable.
    - **Local Ollama**: uses `http://localhost:11434` if the player runs Ollama on their own device.
 5. Generate a concept statement.
@@ -103,7 +103,7 @@ You can either choose a preset strategy, type your own defense, or face a surpri
 
 The existing magnetic-word collage is now a timed Battle that appears only when triggered, rather than staying visible throughout every critique. The topic-specific phrase bank and four slots (**Opening**, **Move**, **Concept**, **Proof / Chaos**) remain the core interaction.
 
-Before timing starts, the critic quotes the previous answer and asks a follow-up about the active topic (experience, form, power, evidence or memory). Their dialogue asks for clarification or an example, never for magnetic-word assembly. The question is visible while players prepare. Click **Start Response** to begin 20 seconds. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
+Before timing starts, the critic quotes the previous answer and asks a follow-up about the active topic (experience, form, power, evidence or memory). Their dialogue asks for clarification or an example, never for magnetic-word assembly. The question is visible while players prepare. Continue from the feedback dialog to start the 20-second Battle automatically. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
 
 `battle-words.js` supplies a changing 16-tile pool for each discipline and critique topic: 4 relevant concepts, 4 alternative methods/evidence statements, 3 openings, 3 connecting phrases and 2 comic detours. Relevant concepts/methods are 50% of each pool; connectors are 37.5%; detours are 12.5%. Multiple concepts and methods can form valid responses. The previous pool is stored locally and fresh phrases are preferred, so identical random draws still produce different successive pools. These are content options, not a single canonical answer.
 
@@ -172,7 +172,7 @@ Concept switching or evasive reframing can lose substance and add discomfort. Th
 
 ## AI strategy drafts
 
-Selecting a defense strategy now generates the player's actual answer from the project, current critic question, discipline and strategy direction. Phenomenology uses a concrete bodily experience; deflection reframes the actual question; evidence proposes a test without inventing measured results; honesty admits a specific limit; deletion names what is removed. AI strategy generation is enabled by default, independently of optional professor feedback. The public no-key endpoint is used unless Local Ollama is selected.
+Selecting a defense strategy now generates the player's actual answer from the project, current critic question, discipline and strategy direction. Phenomenology uses a concrete bodily experience; deflection reframes the actual question; evidence proposes a test without inventing measured results; honesty admits a specific limit; deletion names what is removed. AI strategy generation is enabled by default, independently of optional professor feedback. The configured authenticated service is used unless Local Ollama is selected; without configuration, the game uses clearly labeled offline replies.
 
 The draft appears before submission. Players may request a new version or copy it into their own editable response. The submitted, scored and recorded answer is the actual draft or the player's edit, not the old fixed strategy text. Changing choices aborts earlier requests; a late reply cannot overwrite the latest choice. Generation times out after 12 seconds. Unrelated, repeated or unavailable service responses use clearly labeled offline alternative arguments; offline text is never labeled AI. Professor feedback remains local by default.
 
@@ -180,7 +180,7 @@ The draft appears before submission. Players may request a new version or copy i
 
 Local feedback is the default and quotes the answer with the rule explanation. Optional AI must quote the actual answer opening and stay within 400 characters; unanchored, error-page or empty responses fall back to local feedback. The prompt forbids unrelated invented imagery.
 
-The optional **Free web AI** mode calls a public no-key text generation endpoint from the browser. It is useful for making WeChat playthroughs feel less repetitive, but it has limitations:
+The optional **Online AI** mode calls a configured HTTPS service. The old no-key endpoint has been removed. Groq Free Plan is recommended, with its private key held by the server; see [AI_SETUP.md](./AI_SETUP.md). It still has limitations:
 
 - it can be slow,
 - it can fail,
@@ -346,3 +346,5 @@ Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cov
 拼词现为点选直接入对应槽，同类词替换；顶部实时拼句条随滚动固定，可展开完整文字。
 
 现编话术强化了六种策略的语气和与题目相关的反差。离线回答也使用完整的讽刺论证；删减策略质疑设计者的专业必要性。
+
+`question-arguments.js` now binds each reply to the actual professor question and provides authored alternatives, stakeholders, methods and counterexamples for every default project. The updated online transport is POST JSON with explicit authorization and error reporting. The optional Groq server adapter is prepared but needs a real free account key and deployment before online generation can be verified.

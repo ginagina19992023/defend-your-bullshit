@@ -9,12 +9,14 @@
     balanced:'替客户讲清楚：用清晰理由给荒谬项目辩护，并让概念接受实际验证。语气像在认真为一件离谱小事申请研究经费，最后一处反差与题目紧密相关，不写温吞的总结。'
   };
   function prompt({project,question,strategy,discipline,disciplineId,topic,criticInterest="",previous=[]}){
+    const plan=window.DYB_QUESTION_ARGUMENTS?.plan({project,question,topic,disciplineId});
     return ['你正在玩学术嘴替游戏。你扮演替学生作答的人，生成玩家将说出的答辩，而不是教授的评论。',
       '写中文，4到5句，约150到240字。像真正硬撑的学术嘴替：认真、尖锐、荒谬、有节奏。禁止写成产品说明、温吞建议或散文。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
       '结构：抓住题目一个具体矛盾→按所选策略把它学术升级→正面回应教授追问并给一个方法或判断→用与这个矛盾相关的冷幽默收尾。正文至少两处有趣的反差，不要只在结尾贴一句笑话。',
-      '幽默尺度示例：删墙时可以说“墙已经退场，边界还在坚持上班”；循环开幕致辞可以说“作品一直在开幕，观众已经下班”；提醒关闭提醒可以说“解决问题的通知，成了问题本人”。这些是写法示范，只在题目确实对应时使用，不照搬到别的题目。',
+      plan?'本题的幽默只能从这组关系展开：'+plan.case.twist+'。不要照搬其他题目的物体或笑话；反例必须沿用具体失败条件，不能用荒诞口号冒充判据。':'幽默来自题目本身的操作与期待之间的反差，不从别的项目借用物体或笑话。',
       '不要逐字复述整句教授问题；把它要你解释的点落实到回答。避免固定开头“我想讨论的是”、套路句“理论可以把项目抬高”和到处适用的泛泛总结。',
       '学科：'+discipline,'评论和回答只针对本学科对象，不用建筑词汇解释艺术作品或产品。','评委研究兴趣：'+criticInterest,'项目原题：'+project.slice(0,500),'评委当前问题：'+question.slice(0,600),
+      plan?'本句问题的实际要求：'+plan.demand:'',plan?'必须在前两句直接回答的点：'+plan.answer:'',plan?'题目特有的论证矛盾：'+plan.case.premise:'',plan?'可用的具体比较与反例：'+plan.test+'；失败条件：'+plan.case.failure:'',plan?'可发展的荒谬重读：'+plan.case.twist:'',
       '选择的策略：'+strategy.name+'。'+strategy.description,'本轮回应路径：'+(strategy.target||''),'风格要求：'+(directions[strategy.style]||directions.balanced),
       '第一句必须包含项目的这段原文：'+project.slice(0,36),
       '先抓住项目中的具体动作或物体，再解释它如何回应问题。不要杜撰项目不存在的设备、场地、观众反馈或研究数据。',
@@ -44,11 +46,12 @@
       cancel();const id=sequence;const key=input.project+'|'+input.question+'|'+input.strategy.name;
       const previous=seen.get(key)||[];const context={...input,previous};let text='',source='local',failure='';
       if(mode==='ai'){
-        controller=new AbortController();const owned=controller;const signal=owned.signal;const timeout=setTimeout(()=>owned.abort(),12000);
+        controller=new AbortController();const owned=controller;const signal=owned.signal;const timeout=setTimeout(()=>owned.abort(),25000);
         try{
           text=await request(prompt(context),{signal,provider,model});
+          if(window.DYB_QUESTION_ARGUMENTS&&!window.DYB_QUESTION_ARGUMENTS.valid(text,window.DYB_QUESTION_ARGUMENTS.plan(input)))throw Error('没有回应本句追问的具体要求');
           if(!valid(text,input.project)||(window.DYB_DISCIPLINE_LANGUAGE&&!window.DYB_DISCIPLINE_LANGUAGE.valid(text,input.disciplineId)))throw Error('内容未通过项目与学科检查');if(previous.includes(text))throw Error('接口返回了重复回答');source='ai';
-        }catch(error){failure=error.name==='AbortError'?'请求超过12秒':(error.message||'网络连接失败');text=''}finally{clearTimeout(timeout)}
+        }catch(error){failure=error.name==='AbortError'?'请求超过25秒':(error.message||'网络连接失败');text=''}finally{clearTimeout(timeout)}
       }
       if(id!==sequence)return null;
       if(!text)text=fallback(context);
