@@ -163,7 +163,7 @@
       preference: c.preference || { depth: 1, confidence: 1, substance: 0, discomfort: 1 },
       imported: true
     }));
-    critics.reset();
+    critics.reset(pack().id);
     questions.reset();
     const disciplinePool = pack().id === "architecture" ? professorPool : base.map(professor => ({
       ...professor,
@@ -177,7 +177,8 @@
     }));
     state.criticPool = base.concat(disciplinePool, custom);
     state.seatEvents = [];
-    state.panel = shuffle(state.criticPool).slice(0, 3).map(critics.cast);
+    const seated=critics.cast(shuffle(state.criticPool)[0]);
+    state.panel=Array.from({length:3},()=>({...seated}));
   }
 
   function updateChoice() {
@@ -406,6 +407,7 @@
       }
     }
     state.panel[state.round] = state.professor;
+    for(let next=state.round+1;next<state.panel.length;next++)state.panel[next]={...state.professor};
     $("seatEvent").hidden = !event;
     if (event) {
       state.seatEvents.push({ round: state.round + 1, ...event });

@@ -87,7 +87,9 @@
       $("battleVoiceStatus").textContent=voiceSupported?"语音会转成文字，可修改后提交。":"当前浏览器不支持直接录音，可用手机键盘的麦克风输入。";
       $("battleScoreChange").textContent = "";
       $("battle").scrollIntoView({ block: "start" });
-      $("battleStart").focus({ preventScroll: true });
+      start();
+      $("battleQuestion").setAttribute("tabindex","-1");
+      $("battleQuestion").focus({preventScroll:true});
     }
     function canPlay() {
       if (phase !== "playing") return false;

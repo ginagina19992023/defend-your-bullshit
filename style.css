@@ -140,3 +140,5 @@ footer{font-size:10px;border-top:1px solid var(--line);margin-top:55px;padding-t
 #reactionText .reaction-context{display:block;font-size:13px;line-height:1.65;color:#81786d;margin-bottom:16px}#reactionText .reaction-verdict{display:block;font-family:Georgia,"Songti SC","STSong",serif;font-size:20px;line-height:1.7}#reactionText .reaction-verdict em{display:inline;color:var(--red);font-size:1.25em;font-weight:900;font-style:italic;text-decoration:underline wavy;text-decoration-thickness:1px;text-underline-offset:5px}
 
 #shareRecord{display:block;width:100%;height:auto;background:var(--paper)}.share-wrap .eyebrow{margin-top:24px}
+
+.seat-event{border:2px solid var(--red);border-left:7px solid var(--red);background:#efe0ca;padding:12px 16px;margin:0 0 16px;animation:seat-arrival .5s ease}.seat-event strong{display:block;color:var(--red);font-size:18px}.seat-event p{font-size:14px;line-height:1.6;margin:8px 0 0}@keyframes seat-arrival{from{transform:translateY(-8px);opacity:.3}to{transform:translateY(0);opacity:1}}@media(prefers-reduced-motion:reduce){.seat-event{animation:none}}

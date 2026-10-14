@@ -120,7 +120,6 @@ class BattleTests(unittest.TestCase):
         self.page.click('#submitDefense')
         self.page.click('#reactionContinue')
         if self.page.locator('#battle').is_visible():
-            self.page.click('#battleStart')
             self.fill_collage()
             self.page.click('#battleSubmit')
             self.close_reaction()
@@ -160,7 +159,6 @@ class BattleTests(unittest.TestCase):
                 self.assertIn('不适值首次达到 10', self.page.locator('#battleReason').inner_text())
                 expect(self.page.locator('#nextRound')).to_be_disabled()
                 before = [int(value.split('/')[0]) for value in self.scores()]
-                self.page.click('#battleStart')
                 self.fill_collage()
                 self.assertTrue(self.page.locator('#battleSentence').inner_text())
                 self.assertEqual(self.page.locator('#chaosMeter').inner_text(), 'CHAOS 0')
@@ -191,7 +189,6 @@ class BattleTests(unittest.TestCase):
         self.page.click('#submitDefense')
         self.page.click('#reactionContinue')
         self.assertIn('欣赏型', self.page.locator('#battleReason').inner_text())
-        self.page.click('#battleStart')
         self.assertEqual(self.page.locator('.slot').count(), 4)
         self.assertEqual(self.page.locator('.chip').count(), 16)
         self.fill_collage()
@@ -213,10 +210,9 @@ class BattleTests(unittest.TestCase):
         self.answer( '好')
         self.page.click('#submitDefense')
         self.page.click('#reactionContinue')
-        self.page.clock.run_for(25000)
-        expect(self.page.locator('#battleLive')).to_be_hidden()
+        expect(self.page.locator('#battleLive')).to_be_visible()
+        expect(self.page.locator('#battleStart')).to_be_hidden()
         before = [int(value.split('/')[0]) for value in self.scores()]
-        self.page.click('#battleStart')
         self.page.clock.run_for(3000)
         self.page.click('#battlePause')
         paused = self.page.locator('#battleTimer').inner_text()
@@ -234,7 +230,6 @@ class BattleTests(unittest.TestCase):
         self.answer( '好')
         self.page.click('#submitDefense')
         self.page.click('#reactionContinue')
-        self.page.click('#battleStart')
         self.page.evaluate('testBattle.reset()')
         self.page.clock.run_for(25000)
         expect(self.page.locator('#battle')).to_be_hidden()
@@ -246,7 +241,6 @@ class BattleTests(unittest.TestCase):
         self.answer( '好')
         self.page.click('#submitDefense')
         self.page.click('#reactionContinue')
-        self.page.click('#battleStart')
         first = self.page.locator('.chip[data-type="opening"]').first
         first.drag_to(self.page.locator('.slot[data-slot="opening"]'))
         expect(self.page.locator('.slot[data-slot="opening"]')).to_have_class('slot filled good')
@@ -301,6 +295,17 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(self.scores(),before)
         expect(self.page.locator('#question')).not_to_be_empty()
 
+    def test_professor_name_does_not_change_without_a_seat_event(self):
+        self.page.evaluate('Math.random=()=>0.99')
+        self.begin()
+        name=self.page.locator('#professorLabel').inner_text()
+        for _ in range(2):
+            self.answer('通过原型测试和对照记录判断实际行动。')
+            self.submit_and_settle()
+            self.page.click('#nextRound')
+            self.assertEqual(self.page.locator('#professorLabel').inner_text(),name)
+            expect(self.page.locator('#seatEvent')).to_be_hidden()
+
     def test_visiting_critic_can_take_first_seat(self):
         self.page.evaluate('Math.random = () => 0')
         self.begin()
@@ -323,7 +328,6 @@ class BattleTests(unittest.TestCase):
         self.answer('好')
         self.page.tap('#submitDefense')
         self.page.tap('#reactionContinue')
-        self.page.tap('#battleStart')
         self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > innerWidth'))
         self.fill_collage(touch=True)
         self.page.screenshot(path='/tmp/dyb-collage-mobile.png',full_page=True)
@@ -537,7 +541,6 @@ class BattleTests(unittest.TestCase):
           window.battleResults=[];
           testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:2,confidence:1,substance:3,discomfort:0},reason:'证据：'+answer}),result=>battleResults.push(result));
         }""")
-        self.page.click('#battleStart')
         self.page.select_option('#battleInputMode','free')
         self.page.fill('#battleDraft','通过观察三位使用者，对比改动前后的停留时间。')
         self.page.locator('.chip[data-type="opening"]').first.click()
@@ -552,7 +555,6 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(result['scores'],{'depth':2,'confidence':1,'substance':3,'discomfort':0})
         self.assertNotIn('放对',result['response'])
         self.page.evaluate("""() => testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:2,confidence:1,substance:3,discomfort:0},reason:'证据：'+answer}),result=>battleResults.push(result))""")
-        self.page.click('#battleStart')
         self.fill_collage()
         self.page.click('#battleSubmit')
         self.close_reaction()
@@ -579,7 +581,6 @@ class BattleTests(unittest.TestCase):
         self.page.locator('#strategyMode').evaluate("el=>el.value='local'")
         self.begin()
         self.page.evaluate("""() => testBattle.open('surprise','TEST','PROJECT',answer=>({scores:{depth:1,confidence:1,substance:1,discomfort:0},reason:answer}),result=>window.voiceResult=result)""")
-        self.page.click('#battleStart')
         self.page.select_option('#battleInputMode','free')
         self.page.click('#battleVoice')
         self.page.evaluate("fakeVoice.onresult({results:[[{transcript:'通过观察记录使用者路径'}]]})")
@@ -605,8 +606,8 @@ class BattleTests(unittest.TestCase):
         self.assertIn('物质性',question)
         for word in ['磁条','拼贴','词条','拼一句']:
             self.assertNotIn(word,question)
-        expect(self.page.locator('#battleLive')).to_be_hidden()
-        self.page.click('#battleStart')
+        expect(self.page.locator('#battleLive')).to_be_visible()
+        expect(self.page.locator('#battleStart')).to_be_hidden()
         self.assertEqual(self.page.locator('#battleQuestion').inner_text(),question)
 
 
