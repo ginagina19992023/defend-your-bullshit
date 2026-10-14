@@ -344,3 +344,5 @@ Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cov
 详细的通关、AS 计算、全部选项、Battle、会员验收及事件判定见 [GAME_RULES.md](./GAME_RULES.md)。
 
 拼词现为点选直接入对应槽，同类词替换；顶部实时拼句条随滚动固定，可展开完整文字。
+
+现编话术强化了六种策略的语气和与题目相关的反差。离线回答也使用完整的讽刺论证；删减策略质疑设计者的专业必要性。

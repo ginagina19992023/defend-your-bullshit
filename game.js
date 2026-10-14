@@ -629,7 +629,7 @@
     $("strategyDraftStatus").textContent=$("strategyMode").value==="ai"?"AI 正在现编 · "+strategy.target+"。":"离线话术编写中。";
     $("submitDefense").disabled=true;$("submitDefense").textContent="话术正在生成…";
     $("reviewPresenceText").textContent="你准备采用「"+strategy.name+"」。评委正等你把理由说清楚。";
-    const result=await writer.generate({project:state.project,question:state.question.text,strategy,discipline:pack().name,disciplineId:pack().id,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic,disciplineId:pack().id}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
+    const result=await writer.generate({project:state.project,question:state.question.text,strategy,topic:state.question.topic,discipline:pack().name,disciplineId:pack().id,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic,disciplineId:pack().id}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
     if(!result||version!==strategyVersion)return;
     state.strategyDraft=result;$("strategyPreview").textContent=result.text;
     $("strategyDraftStatus").textContent=result.source==="ai"?"AI 现编 · 可以重编或修改，提交这段文字参与评分。":result.unavailable?"AI 暂时未返回有效新话术，已切换为离线回答。原因："+(result.failure||"未获得有效内容")+"。":"离线回答 · 可重编或自行修改。";
