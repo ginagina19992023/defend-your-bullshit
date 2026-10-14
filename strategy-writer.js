@@ -26,11 +26,10 @@
       previous.length?'避免重复之前的表达：'+previous.slice(-2).map(s=>s.slice(0,200)).join(' / '):'',
       '绝对不写段子：不追求搞笑，不安排包袱、抖机灵、冷幽默、金句或反转收尾。整段是一条连续的学术论证，最后一句继续推导或限定判断，而不是另贴笑话。荒谬仅来自解释尺度远大于项目细节，措辞保持真实讲评的严肃与克制。',
       '禁止给物体办理护照、入职、辞职、升职、签收、免检等拟人段子；不要生搬神经科学、拓扑、量子或统计名词。术语必须解释当前实际差别。',
-      '风格示范：三厘米不足以阻挡身体，却足以把经过重新定义为跨越；公共空间因此由谁需要抬脚、谁能直接通过来界定。示范只展示推演方式，当前题目没有三厘米或广场时绝不可借用这些对象。',
       '输出前在内部检查字数：正文含标点不超过100字，优先50–80字。若超长，先删铺垫、重复解释和总结，再改写为两句；不输出字数、检查过程或说明。',
       '只输出玩家的答辩正文。'].filter(Boolean).join('\n');
   }
-  function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=120&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
+  function valid(text,project){if(window.DYB_PROJECT_FACTS&&!window.DYB_PROJECT_FACTS.valid(text,project))return false;return typeof text==='string'&&text.length>=40&&text.length<=120&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
   function fallback({project,question,strategy,disciplineId,topic,previous=[]}){
     // These are complete alternative arguments, not random word substitutions.
     const p='「'+project+'」',q='「'+question.slice(0,70)+'」';

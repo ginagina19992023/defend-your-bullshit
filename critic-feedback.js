@@ -17,6 +17,7 @@
       '只输出反馈正文。'].join('\n');
   }
   function valid(text,{project,answer,disciplineId},language){
+    if(window.DYB_PROJECT_FACTS&&!window.DYB_PROJECT_FACTS.valid(text,project+' '+answer))return false;
     if(typeof text!=='string'||text.length<18||text.length>110||/<html|<!doctype|unauthorized|api key|gsk_/i.test(text))return false;
     if(language&&!language.valid(text,disciplineId))return false;
     // Short comments need a concrete lexical link, not a mandatory sixteen-character quotation.

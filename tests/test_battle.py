@@ -716,6 +716,18 @@ class BattleTests(unittest.TestCase):
         self.assertEqual(len(calls),2)
         self.assertIn('压缩任务',json.loads(calls[1])['messages'][0]['content'])
 
+    def test_custom_tower_rejects_chinese_measurements_from_other_projects(self):
+        self.page.fill('#project','做一个永远无法抵达的塔楼')
+        self.page.locator('#strategyMode').evaluate("el=>el.value='ai'")
+        self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
+        bad='在这座永远无法抵达的塔楼中，唯一被人为设定的可跨越尺度是三厘米的微距间隙。'+ '这三厘米的间隙迫使每一次攀登尝试在身体姿态与空间之间重新安排。'*4
+        self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':bad})))
+        self.page.click('#generate')
+        expect(self.page.locator('#statementSource')).to_contain_text('暂不可用')
+        expect(self.page.locator('#generated')).to_contain_text('抵达')
+        self.assertNotIn('三厘米',self.page.locator('#generated').inner_text())
+        self.assertNotIn('AI 陈述',self.page.locator('#statementSource').inner_text())
+
     def test_opening_statement_magnifies_the_project_before_any_review(self):
         self.page.fill('#project','把广场抬高三厘米，要求所有人绕路')
         self.page.click('#generate')
