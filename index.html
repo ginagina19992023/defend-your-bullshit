@@ -99,7 +99,7 @@
 
 </dialog>
     <dialog id="optionalDialog" class="settings-dialog"><button class="dialog-close outline" type="button" data-close="optionalDialog" aria-label="关闭可选设置">×</button><p class="eyebrow">OPTIONAL / 按需调整</p><h2>给评委换一点口味。</h2><p class="sub">这些设置不影响你直接开始游戏。</p>          <div class="ai-panel">
-            <label for="strategyMode">选择策略后生成玩家话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。已接免费在线模型，无需玩家填写 key；超时或额度用尽时使用离线回答，并注明来源。语音转写仍取决于浏览器支持。</p>
+            <label for="strategyMode">开场陈述与策略话术</label><select id="strategyMode"><option value="ai" selected>AI 每次现编 / 根据项目与问题</option><option value="local">离线回答 / 无需等待</option></select><p class="sub">话术现编与教授点评分开。已接免费在线模型，无需玩家填写 key；超时或额度用尽时使用离线回答，并注明来源。语音转写仍取决于浏览器支持。</p>
             <label for="aiProvider">教授反馈 / OPTIONAL AI FEEDBACK</label>
             <select id="aiProvider">
               <option value="pollinations" selected>AI 教授点评 / 失败自动备用</option>
@@ -116,7 +116,7 @@
               <label for="ollamaModel">OLLAMA MODEL</label>
               <input id="ollamaModel" type="text" value="llama3.1" aria-label="Ollama model name">
             </div>
-            <p class="sub">默认使用本地反馈，围绕你的回答与当前问题。可选 AI 只补充有明确引用的批评；失败或跑题时使用本地反馈。</p>
+            <p class="sub">教授默认在线点评，围绕你的回答与当前问题；失败或跑题时使用备用评语。</p>
           </div>
           <div class="ai-panel">
             <label for="criticPackFile">IMPORT WEIRD CRITIC PACK / 导入教授包</label>
@@ -164,7 +164,7 @@
     <section id="statement" class="screen" hidden>
       <figure id="statementDrawing" class="project-drawing" hidden></figure>
       <p class="eyebrow">THE CONCEPTUAL STATEMENT / 001</p>
-      <div class="statement-project"><p class="eyebrow">本局题目 / YOUR PROJECT</p><h2 id="statementProject"></h2></div><h2>你的上台话术，准备好了。</h2><p class="sub speech-hint">红色是你的概念牌。先抓住它，再把项目讲下去。</p>
+      <div class="statement-project"><p class="eyebrow">本局题目 / YOUR PROJECT</p><h2 id="statementProject"></h2></div><h2>你的上台话术，准备好了。</h2><p class="sub speech-hint">从那个最小的细节，把整个项目讲下去。</p>
       <p id="statementSource" class="sub" role="status"></p>
       <article class="letter" id="generated"></article>
       <div class="actions">
