@@ -9,3 +9,5 @@ test('late generation cannot overwrite a newer strategy',async()=>{const pending
 test('offline alternative arguments vary without claiming to be AI',async()=>{const writer=api.create({request:async()=>{throw Error('offline')}});const a=await writer.generate(input,{mode:'local'}),b=await writer.generate(input,{mode:'local'});assert.notEqual(a.text,b.text);assert.equal(a.source,'local');assert.equal(a.unavailable,false)});
 
 test('short academic replies do not have to repeat the project title',()=>{assert(api.valid('重力不需要作者，排列却需要责任。若换一种堆法也产生相同的观看顺序，我就撤回原创性的申报；石头无需陪同人员。',input.project));const p=api.prompt(input);assert(p.includes('50到80字'));assert(!p.includes('第一句必须包含'));assert(!api.valid('字'.repeat(181),input.project))});
+
+test('an overlong draft is compressed by AI before falling back',async()=>{const calls=[];const writer=api.create({request:async p=>{calls.push(p);return calls.length===1?good.repeat(3):good}});const r=await writer.generate(input);assert.equal(r.source,'ai');assert.equal(r.text,good);assert.equal(calls.length,2);assert(calls[1].includes('压缩任务'));assert(calls[1].includes(good));assert(calls[0].includes('内部检查字数'))});

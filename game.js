@@ -437,7 +437,11 @@
     if (provider === "local" || !answer.trim()) return "";
     const prompt = aiPrompt(answer, grading, questionText);
     try {
-      const result = provider === "ollama" ? await fetchOllama(prompt) : await fetchPollinations(prompt);
+      const request=provider === "ollama"?fetchOllama:fetchPollinations;
+      let result=await request(prompt);
+      if(typeof result==='string'&&result.length>85&&result.length<=2000){
+        result=await request(prompt+"\n压缩任务：保留原点评指出的一个具体矛盾与教授的反应，压至35–65字，含标点最多85字。不要重讲学生回答或补充新判断。内部检查长度，仅输出压缩后的正文。\n原点评："+result);
+      }
       return window.DYB_CRITIC_FEEDBACK.valid(result,{project:state.project,answer,disciplineId:pack().id},window.DYB_DISCIPLINE_LANGUAGE)?result:"";
     } catch (error) {
       console.warn("AI feedback failed, falling back to local rules:", error);

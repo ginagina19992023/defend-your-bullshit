@@ -703,12 +703,18 @@ class BattleTests(unittest.TestCase):
         self.page.locator('#aiAppKey').evaluate("el=>el.value='pk_testfixture'")
         self.page.locator('#aiProvider').evaluate("el=>el.value='pollinations'")
         reply='评委对生理需求竟能维持轴线秩序感到迟疑。他开始怀疑，自己以往赞许的仪式性，是否同样以身体的忍耐为前提。'
-        self.page.route('https://gen.pollinations.ai/**',lambda route:route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':reply})))
+        calls=[]
+        def respond(route):
+            calls.append(route.request.post_data)
+            route.fulfill(status=200,content_type='application/json',body=json.dumps({'text':reply*3 if len(calls)==1 else reply}))
+        self.page.route('https://gen.pollinations.ai/**',respond)
         self.answer('身体的忍耐成为轴线秩序的前提，生理需求被拉长为建筑的仪式。')
         self.page.click('#submitDefense')
         expect(self.page.locator('#reactionDialog')).to_be_visible()
         expect(self.page.locator('#feedback')).to_contain_text(reply)
         self.assertNotIn('你说「',self.page.locator('#feedback').inner_text())
+        self.assertEqual(len(calls),2)
+        self.assertIn('压缩任务',json.loads(calls[1])['messages'][0]['content'])
 
     def test_opening_statement_magnifies_the_project_before_any_review(self):
         self.page.fill('#project','把广场抬高三厘米，要求所有人绕路')
