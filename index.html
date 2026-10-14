@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
-  <link rel="stylesheet" href="./style.css?v=entry-20261013-1">
+  <link rel="stylesheet" href="./style.css?v=review-20261014">
 </head>
 <body>
   <main class="paper">
@@ -168,6 +168,7 @@
         <span id="roundLabel">ROUND 1 / 3</span>
         <span id="professorLabel"></span>
       </div>
+      <div class="review-presence"><span id="reviewFace" aria-hidden="true">:-|</span><div><strong id="reviewProfessor"></strong><span id="reviewBias" class="bias-label"></span><p id="reviewPresenceText"></p></div></div>
       <div class="review-layout">
         <aside class="professor-card" aria-live="polite">
           <div id="professorFace" class="professor-face">:-|</div>
@@ -177,12 +178,11 @@
           <p id="moodNote">委员会仍在试图相信你。</p>
         </aside>
         <div>
-          <h2>THE PROFESSOR HAS A QUESTION.</h2>
+          <h2 class="question-heading">评委问你：</h2>
           <blockquote id="question"></blockquote>
-          <div class="progress-card">
-            <div class="progress-title">PASS CHECK</div>
+          <details class="progress-card"><summary class="progress-title">本局分数 / 通关进度</summary>
             <div id="passChecklist" class="checklist"></div>
-          </div>
+          </details>
         </div>
       </div>
 
@@ -191,14 +191,16 @@
         <p id="seatEventText"></p>
       </div>
 
-      <label>CHOOSE A DEFENSE STRATEGY</label>
+      <label>选择你的回应方式</label>
       <div id="strategies"></div>
 
-      <label for="customAnswer">OR TYPE YOUR OWN DEFENSE</label>
+      <details class="strategy-answer"><summary>查看当前策略将说出的回答</summary><p id="strategyPreview"></p></details>
+      <details id="customReply"><summary>自己回答 / 自由输入</summary><label for="customAnswer">你的回答（填写后优先使用）</label>
       <textarea id="customAnswer" placeholder="你可以写材料、方法、实验、现场观察，也可以承认自己其实不知道……"></textarea>
       <p class="sub">自由输入可以玩。系统会看它是否回应问题、是否有证据、是否过度黑话、是否回避，以及是否触发教授的荒谬矛盾逻辑。不适升高、概念受到欣赏，或随机突发追问，都可能触发现实 Battle。</p>
 
-      <div class="actions">
+      </details>
+      <div id="reviewDock" class="actions review-dock">
         <button id="submitDefense" type="button">DEFEND YOUR PROJECT</button>
       </div>
 
@@ -209,13 +211,13 @@
         </div>
         <h2 id="battleTitle" tabindex="-1">现实 Battle</h2>
         <p id="battleReason"></p>
-        <p id="battleIntro" class="sub">评委突然打断答辩。点击开始后，你有 20 秒回应当前问题：可以拼词、补充文字，或直接输入。评委看回答里的要点，不数填对了几个槽。超时按最终回答结算。</p>
+        <blockquote id="battleQuestion"></blockquote>
+        <p id="battleIntro" class="sub">先读评委的问题。准备好后点击开始，你有 20 秒回应当前问题：可以拼词、补充文字，或直接输入。评委看回答里的要点，不数填对了几个槽。超时按最终回答结算。</p>
         <div id="battleLive" hidden>
           <div class="battle-clock">
             <span>拼贴倒计时 <strong id="battleTimer" role="timer">20 秒</strong></span>
             <button id="battlePause" class="outline mini" type="button" aria-pressed="false">暂停计时</button>
           </div>
-          <blockquote id="battleQuestion"></blockquote>
           <div class="battle-reaction"><span id="battleFace" class="battle-face" aria-hidden="true">:-|</span><span class="sub">评委正在看你现场拼贴。</span></div>
           <div class="slot-board" id="slotBoard" aria-label="答辩拼贴槽">
             <button type="button" class="slot" data-slot="opening"><span>OPENING</span><strong>拖一个开场</strong></button>
@@ -235,7 +237,7 @@
         <p id="battleScoreChange" class="scores"></p>
         <div id="battleActions" class="actions battle-actions">
           <span id="battleDockTime" class="battle-dock-time"></span><button id="battleDockPause" class="outline mini" type="button">暂停</button>
-          <button id="battleStart" type="button">开始限时拼贴</button>
+          <button id="battleStart" type="button">开始回应 / 20 秒</button>
           <button id="battleSubmit" type="button" hidden>提交现场回答</button>
         </div>
       </section>
@@ -244,6 +246,8 @@
         <div class="letter">
           <p class="eyebrow">CRITIQUE FEEDBACK</p>
           <p id="feedback"></p>
+          <details id="feedbackPoints" class="feedback-detail"><summary>评委抓住的要点 / 为什么这样评分</summary><p id="feedbackReason"></p></details>
+          <details id="feedbackOriginal" class="feedback-detail"><summary>查看你本轮的完整回答</summary><p id="submittedAnswer"></p></details>
           <div id="scoreChange" class="scores"></div>
         </div>
         <div class="actions">
@@ -285,14 +289,16 @@
     <div class="redaction r2"></div>
     <div class="crumb">?</div>
   </main>
-  <script src="./packs.js?v=entry-20261013-1"></script>
-  <script src="./battle.js?v=entry-20261013-1"></script>
-  <script src="./critics.js?v=entry-20261013-1"></script>
-  <script src="./share-card.js?v=entry-20261013-1"></script>
-  <script src="./career.js?v=entry-20261013-1"></script>
-  <script src="./career-ui.js?v=entry-20261013-1"></script>
-  <script src="./play-session.js?v=entry-20261013-1"></script>
-  <script src="./game.js?v=entry-20261013-1"></script>
+  <dialog id="reactionDialog" class="reaction-dialog" aria-labelledby="reactionName"><p class="eyebrow">THE PANEL REACTS / 评委反应</p><h2 id="reactionName"></h2><div id="reactionFace" aria-hidden="true">:-|</div><p id="reactionText" aria-hidden="true"></p><p id="reactionAccessible" class="visually-hidden"></p><button id="reactionContinue" type="button">知道了 / 继续</button></dialog>
+  <script src="./questions.js?v=review-20261014"></script><script src="./reaction.js?v=review-20261014"></script>
+  <script src="./packs.js?v=review-20261014"></script>
+  <script src="./battle.js?v=review-20261014"></script>
+  <script src="./critics.js?v=review-20261014"></script>
+  <script src="./share-card.js?v=review-20261014"></script>
+  <script src="./career.js?v=review-20261014"></script>
+  <script src="./career-ui.js?v=review-20261014"></script>
+  <script src="./play-session.js?v=review-20261014"></script>
+  <script src="./game.js?v=review-20261014"></script>
 </body>
 </html>
 

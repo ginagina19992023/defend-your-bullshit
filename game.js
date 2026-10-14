@@ -161,6 +161,7 @@
       imported: true
     }));
     critics.reset();
+    questions.reset();
     const disciplinePool = pack().id === "architecture" ? professorPool : base.map(professor => ({
       ...professor,
       biasLabel: "BIAS: " + professor.bias,
@@ -318,7 +319,7 @@
       substance: clamp(substance, -2, 9),
       discomfort: clamp(discomfort, 0, 10),
       tags,
-      reason: reasons.join("；") + "。",
+      reason: reasons.map(reason=>reason.replace(/[。；\s]+$/g, "")).join("；") + "。",
       absurd: lucky ? reasons[reasons.length - 1] : ""
     };
   }
@@ -334,8 +335,12 @@
   function updateMood() {
     const mood = moodFor(state.scores.discomfort);
     $("professorFace").textContent = mood.face;
+    $("reviewFace").textContent=mood.face;
+    $("reviewPresenceText").textContent=mood.note;
     $("moodLabel").textContent = mood.label;
     $("moodNote").textContent = mood.note;
+    $("reviewProfessor").textContent=state.professor?.name||"评委";
+    $("reviewBias").textContent=state.professor?.biasLabel||"";
     $("biasLabel").textContent = state.professor?.biasLabel || "BIAS: undecided";
   }
 
@@ -360,12 +365,18 @@
     const scheduled = state.panel[state.round];
     const event = critics.replace(state.round, state.scores, scheduled, state.criticPool);
     state.professor = event ? event.incoming : scheduled;
+    if(!state.professor.imported){
+      const preId=professional()&&state.round===0?career.snapshot().active?.scenario?.id:null;
+      const preferredTopic=preId==="evidence"?"evidence":preId==="trauma"?"memory":state.professor.topic;
+      const selected=questions.pick({pack:pack().id,project:state.project,topic:preferredTopic,forceTopic:preId==="evidence"||preId==="trauma",round:state.round,answer:state.history.at(-1)?.answer||"",scores:state.scores});
+      state.professor={...state.professor,question:selected.text,topic:selected.topic,questionId:selected.id};
+    }
     const scenario = professional() ? career.snapshot().active?.scenario : null;
     if (state.round === 0 && scenario) {
       if (scenario.id === "evidence") {
-        state.professor = { ...state.professor, bias: "evidence", biasLabel: "BIAS: 先给依据，再谈概念", question: "上次你没有解释这个决定的依据。现在请给出一次观察、一个对照，或者一项测试。", topic: "evidence", preference: { ...state.professor.preference, substance: 2 } };
+        state.professor = { ...state.professor, bias: "evidence", biasLabel: "BIAS: 先给依据，再谈概念", question: "上次你没有解释依据。这次请用具体材料回应：" + state.professor.question, topic: "evidence", preference: { ...state.professor.preference, substance: 2 } };
       } else if (scenario.id === "trauma") {
-        state.professor = { ...state.professor, bias: "memory", biasLabel: "BIAS: 对拼贴大师的名字有旧伤", question: "又是勒·柯布哈兹那套话术？他当年也说这种项目值得继续。你能不借大师的名字，把它讲清楚吗？", topic: "memory", preference: { ...state.professor.preference, discomfort: 1 } };
+        state.professor = { ...state.professor, bias: "memory", biasLabel: "BIAS: 对拼贴大师的名字有旧伤", question: "不要再借勒·柯布哈兹的名字。请用你自己的判断回答：" + state.professor.question, topic: "memory", preference: { ...state.professor.preference, discomfort: 1 } };
       } else if (scenario.id === "stress") {
         state.professor = { ...state.professor, question: "你的客户前几次都没讲清楚。你来接手，就能改变什么？ " + state.professor.question };
       }
@@ -394,11 +405,16 @@
       btn.append(title, description);
       btn.addEventListener("click", () => {
         state.chosen = i;
+        $("strategyPreview").textContent=s.answer;
+        $("reviewPresenceText").textContent="你准备采用「"+s.name+"」。评委正等你把理由说清楚。";
         updateChoice();
       });
       $("strategies").append(btn);
     });
     state.chosen = 0;
+    $("strategyPreview").textContent=pack().strategies[0].answer;
+    $("customReply").open=false;
+    $("reviewDock").hidden=false;
     updateChoice();
     updateMood();
     passStatus();
@@ -466,18 +482,25 @@
     const choice = pack().strategies[state.chosen];
     const custom = $("customAnswer").value.trim();
     const answer = custom || choice.answer;
+    const beforeFace=$("professorFace").textContent;
+    reaction.thinking({from:beforeFace,name:state.professor.name});
     const grading = evaluate(answer, state.question, custom ? "manual" : choice.style);
     for (const key of Object.keys(state.scores)) state.scores[key] += grading[key];
 
     $("submitDefense").disabled = true;
     $("submitDefense").textContent = "PROFESSOR IS THINKING...";
     const mainTag = grading.tags[0];
-    const localResponse = "你说「" + answer.slice(0,36) + (answer.length>36?"…":"") + "」。" + grading.reason + "。\n" + random(contradictionPool[mainTag]);
+    const excerpt=answer.split(/[。！？\n]/).find(Boolean)||answer;
+    const localResponse = "你说「" + excerpt.slice(0,42) + (excerpt.length>42?"…":"") + "」。\n" + random(contradictionPool[mainTag]);
     const trigger = battle.pickTrigger(state.scores, grading);
     const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
     const response = aiResponse || localResponse;
     $("submitDefense").textContent = trigger ? "已进入现实 BATTLE" : "答辩已提交";
-    $("feedback").textContent = response + "\n\n" + grading.reason + "\n\nYOUR DEFENSE: " + answer;
+    $("feedback").textContent = response;
+    $("feedbackReason").textContent = grading.reason;
+    $("submittedAnswer").textContent = answer;
+    $("feedbackPoints").open=false;
+    $("feedbackOriginal").open=false;
     $("scoreChange").textContent = "DEPTH +" + grading.depth + "  CONFIDENCE +" + grading.confidence + "  SUBSTANCE " + (grading.substance >= 0 ? "+" : "") + grading.substance + "  DISCOMFORT +" + grading.discomfort + (aiResponse ? "  AI VARIATION ON" : "  LOCAL RULES");
     state.history.push({ professor: state.professor.name, question: state.question.text, answer, grading, response, ai: Boolean(aiResponse) });
     $("feedbackBlock").hidden = false;
@@ -485,7 +508,7 @@
     updateMood();
     passStatus();
     $("nextRound").disabled = Boolean(trigger);
-    if (trigger) {
+    const enterBattle=()=>{if (trigger) {
       battle.open(trigger, state.professor.name, state.project, answer => {
         const grading = evaluate(answer, state.question, "battle");
         return {
@@ -498,6 +521,8 @@
           reason: grading.reason
         };
       }, result => {
+        const oldFace=$("professorFace").textContent;
+        reaction.thinking({from:oldFace,name:state.professor.name});
         for (const key of Object.keys(state.scores)) {
           state.scores[key] += result.scores[key];
           if (key !== "substance") state.scores[key] = Math.max(0, state.scores[key]);
@@ -506,8 +531,15 @@
         updateMood();
         passStatus();
         $("nextRound").disabled = false;
-      }, { vocabulary: pack().vocabulary });
-    }
+        reaction.resolve({to:$("professorFace").textContent,text:"评委听完你的补充，重新看了一眼项目。\n"+result.response});
+      }, { vocabulary: pack().vocabulary, topic: state.question.topic, question: state.question.text, previousAnswer: answer, followUp: questions.pick({pack:pack().id,project:state.project,topic:state.question.topic,round:state.round,answer,stage:"battle",scores:state.scores}).text });
+    }};
+    $("reviewDock").hidden=true;
+    const reactionLead=grading.substance>=3&&grading.depth>=3?"评委若有所思：这个项目可能真的有点意思。":grading.discomfort>=6?"评委皱起眉头，重新审视你的说法。":grading.substance>=3?"评委停下笔，认真看了看你给的依据。":"评委沉默片刻，似乎还在等更明确的解释。";
+    const expression=grading.substance>=3&&grading.depth>=3?"o_o":grading.tags.includes("tooConceptual")?">:|":grading.tags.includes("tooHonest")?":-?":grading.substance>=3?":-)":":-/";
+    $("professorFace").textContent=expression;$("reviewFace").textContent=expression;
+    $("reviewPresenceText").textContent=reactionLead;
+    reaction.resolve({to:expression,text:reactionLead+"\n"+response,onContinue:enterBattle});
   }
 
   function verdict() {
@@ -595,6 +627,8 @@
   }
 
   const battle = window.DYB_BATTLE.create();
+  const questions=window.DYB_QUESTIONS.create();
+  const reaction=window.DYB_REACTION.create();
   const critics = window.DYB_CRITICS.create();
   const play = window.DYB_PLAY.create();
   const professional = () => play.snapshot().mode === "career";

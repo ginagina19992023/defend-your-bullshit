@@ -11,9 +11,16 @@
     proof: ["因此它必须保持未完成。", "这也是我选择不解决它的原因。", "所以证据不是结果，而是过程。", "它需要以不舒服的方式存在。", "否则它就只剩下一个设计。"]
   };
   const encounters = {
-    pressure: { title: "委员会坐不住了。拼给他看。", reason: "委员会不适值首次达到 10，评委要求你当场重新拼出论证。", question: "别再读陈述。用这些磁条，把概念和现实拼在一起。" },
-    admiration: { title: "他太喜欢你的概念了。再拼一句。", reason: "概念得分很高，触发欣赏型 Battle。评委突然兴奋，要求你现场延伸概念。", question: "这个概念有意思！现在用这些词，让它再往前走一步。" },
-    surprise: { title: "评图现场突然加赛。", reason: "随机突发 Battle。评委打断流程，要求你临场拼贴单词。", question: "拿走稿子。给你这些磁条，你能当场拼出一个答辩吗？" }
+    pressure: { title: "等等，这一点还没有说清楚。", reason: "不适值首次达到 10，评委中断陈述，要求澄清当前论证。", lead: "请直接解释，不要再换一个更大的概念。" },
+    admiration: { title: "这个概念有意思，能展开一点吗？", reason: "触发欣赏型追问：评委想了解概念如何在项目里成立。", lead: "这个判断有潜力，但我想知道它具体如何发生。" },
+    surprise: { title: "我想追问一个具体问题。", reason: "随机突发追问：评委要求补充解释或依据。", lead: "先停在这一点，我们把它讲清楚。" }
+  };
+  const followUps = {
+    experience: "你说的体验具体发生在哪一个时刻？谁在使用，它如何改变了人的行动？",
+    form: "为什么必须采用这个形式？如果换一种形式，你最重要的判断还成立吗？请说出依据。",
+    power: "这个安排具体让谁受益，又排除了谁？你如何判断，而不是只宣称它具有公共性？",
+    evidence: "你具体观察了什么、记录了哪些变化？这些证据如何支持你刚才的判断？",
+    memory: "你引用的记忆或历史，具体改变了项目的哪个决定？请解释两者的联系。"
   };
   const sample = (items, count) => {
     const shuffled = items.slice();
@@ -68,7 +75,7 @@
       if (isPending()) return;
       stopTimer();
       if (kind === "pressure") pressureTriggered = true;
-      active = { kind, professor, project };
+      active = { kind, professor, project, question: (options.previousAnswer ? "你刚才说「" + options.previousAnswer.slice(0,36) + (options.previousAnswer.length>36?"…":"") + "」。\n" : "") + encounters[kind].lead + "\n" + (options.followUp || followUps[options.topic] || options.question || "你最关键的判断是什么？请解释它如何体现在这个项目里，并给一个具体依据。") };
       vocabulary = Array.isArray(options.vocabulary) ? options.vocabulary : null;
       grade = gradeAnswer;
       onResolve = callback;
@@ -79,6 +86,7 @@
       professorLeft = false;
       $("battle").hidden = false;
       $("battleTitle").textContent = encounters[kind].title;
+      $("battleQuestion").textContent=active.question;
       $("battleReason").textContent = professor + " · 项目「" + project + "」\n" + encounters[kind].reason;
       $("battleIntro").hidden = false;
       $("battleLive").hidden = true;
@@ -175,7 +183,7 @@
       $("battleDockPause").disabled=false;
       $("battleIntro").hidden = true;
       $("battleLive").hidden = false;
-      $("battleQuestion").textContent = encounters[active.kind].question;
+
       $("battleFace").textContent = ":-|";
       $("battleFace").classList.remove("flinch", "leave");
       $("battlePause").disabled = false;

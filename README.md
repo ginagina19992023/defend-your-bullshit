@@ -76,6 +76,16 @@ After each settlement, unless the account closes, one event has a **45%** chance
 | Senior-member recommendation | 4 cleared jobs | Portfolio: 1 time and 2 Tokens, +6 XP, +3 reputation. Buy recommendation: ¥35, +10 XP, −4 reputation. Postpone: no effect. |
 | Optional client mission | 2 cleared jobs; independent 40% chance per new offer | Clear with substance ≥8, confidence ≥12, or discomfort ≤10, according to the brief, to earn its bonus. |
 
+## Question selection and immediate reactions
+
+`questions.js` contains **150 authored questions**: 40 each for architecture, contemporary art and startup presentations, plus 30 follow-ups across five critique topics. Normal rounds stay within the selected discipline. Weighted selection considers critic preference, project and previous-answer keywords, question-topic variety, round number and pressure. Later or tense rounds favor more dramatic dilemmas. Topic matching is a local keyword heuristic, not semantic AI. Imported professor questions remain intact; PRE evidence and memory cases constrain the chosen topic.
+
+The last 60 question IDs persist across sessions in the current browser. Previously asked questions are excluded while fresh eligible questions remain; if a discipline/topic pool is exhausted, repetition is allowed. Each run also keeps its own used-question set. Battle follow-ups retain the current scoring topic and quote the previous response. Players read the critic's actual clarification request before the timer starts. Magnetic words are a response interface, never an instruction spoken by the critic.
+
+Normal defense options use a compact two-column grid. Preview the selected answer or open your own text response when needed. A sticky reviewer strip remains visible while selecting, and the submit action stays at the bottom of the viewport. Every normal submission and resolved Battle opens an immediate reaction dialog, changing expression and typing a short response. Continue can skip the typing animation; Escape also continues after grading. Reduced-motion preferences skip animated typing. A triggered Battle starts only after this reaction is dismissed, so no timer runs behind the modal.
+
+Critic feedback, scoring rationale and the original answer appear in separate sections. Rationale and original text are collapsed initially, and the rationale is rendered once with normalized punctuation.
+
 ## Three-round defense
 
 Each run randomly selects three professors from the pool. Professors have different biases:
@@ -93,7 +103,7 @@ You can either choose a preset strategy, type your own defense, or face a surpri
 
 The existing magnetic-word collage is now a timed Battle that appears only when triggered, rather than staying visible throughout every critique. The original phrase bank and four slots (**Opening**, **Move**, **Concept**, **Proof / Chaos**) remain the core interaction.
 
-Click **Start Timed Collage** to begin 20 seconds. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
+Before timing starts, the critic quotes the previous answer and asks a follow-up about the active topic (experience, form, power, evidence or memory). Their dialogue asks for clarification or an example, never for magnetic-word assembly. The question is visible while players prepare. Click **Start Response** to begin 20 seconds. Drag/tap tiles, supplement the assembled sentence, or choose free answer mode and type the entire response. Optional speech recognition transcribes into the editable field where supported; unsupported browsers offer keyboard microphone input instead. Recording stops on settlement/reset, and late transcripts cannot change a settled answer.
 
 The professor evaluates the final text against the current question: recognized topic concepts, concrete methods and evidence. Slot count, tile type compatibility and timeout do not award or subtract points. An empty answer loses confidence; nonempty Battle grading has no random sympathy bonus. Score changes and recognized expressions are shown explicitly. Local keyword scoring remains heuristic. Absurd tiles can produce a temporary walkout animation, but placement chaos does not change settlement scores.
 
@@ -297,6 +307,6 @@ Install the Python `playwright` package and Chromium (or run `playwright install
 python -m unittest discover -s tests -v
 ```
 
-Run `node tests/career.test.js` for the career economy and PRE contract checks.
+Run `node tests/career.test.js`, `node tests/play-session.test.js` and `node tests/questions.test.js` for economy, invitations and question-selection checks.
 
 Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cover trigger conditions, word placement, timers, one-time scoring, seat changes, fictional names, mobile taps, the three-round game flow, career resume/reset, unlocked themes, PRE questions and complete multilingual share-card rendering.
