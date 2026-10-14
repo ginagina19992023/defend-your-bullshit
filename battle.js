@@ -227,7 +227,7 @@
       const scores = { ...grading.scores };
       if(!answer){scores.confidence=-1;scores.discomfort=1;}
       const response = (timedOut ? "时间到，按你的最终回答结算。" : "现场回答已提交。") + "\n" + grading.reason + "\n评委按回应问题、概念与证据评分，磁条位置不计分。";
-      const result = { kind: active.kind, scores, answer, timedOut, chaos, professorLeft, response };
+      const result = { kind: active.kind, question:active.question, professor:active.professor, scores, answer, timedOut, chaos, professorLeft, response };
       $("battleTimer").textContent = timedOut ? "时间到" : "已提交";
       $("battlePause").disabled = true;
       $("battleDockPause").disabled=true;

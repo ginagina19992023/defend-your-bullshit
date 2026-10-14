@@ -332,3 +332,5 @@ Run `node tests/career.test.js`, `node tests/play-session.test.js` and `node tes
 Set `CHROMIUM_PATH` if the browser is installed at a custom path. The checks cover trigger conditions, word placement, timers, one-time scoring, seat changes, fictional names, mobile taps, the three-round game flow, career resume/reset, unlocked themes, PRE questions and complete multilingual share-card rendering.
 
 评委问题现在由本局项目题目、实际操作、当前关注点及追问阶段构建，不再直接复用题库原句；题库承担关注点与戏剧情境的抽样。问题生成目前是本地规则，不依赖公共 AI 接口。反应弹窗将回顾缩小淡化，核心评语用衬线字体，荒谬关键词放大标红。
+
+分享卡分两页预览：第一页是结局海报和本局实际评图教授的模拟签名，第二页完整保存三轮问题、玩家回答、教授评语及 Battle 追问。保存按钮将两页合为一张长图，文字先测量后绘制，不截断答辩。

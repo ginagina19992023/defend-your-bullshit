@@ -617,15 +617,18 @@
 
   function drawShareCard() {
     const last = state.history[state.history.length - 1] || {};
-    window.DYB_SHARE_CARD.draw($("shareCard"), {
+    const data={
       project: state.project,
       verdict: state.final,
       scores: state.scores,
       critique: last.response || state.final.text || "",
       defense: last.answer || state.statement || "",
       careerTitle: professional() ? career.snapshot().tierName : "简易单局",
+      history:state.history,
       url: liveUrl
-    });
+    };
+    window.DYB_SHARE_CARD.draw($("shareCard"),data);
+    window.DYB_SHARE_CARD.drawRecord($("shareRecord"),data);
   }
 
   function copy(text) {
@@ -789,7 +792,7 @@
     drawShareCard();
     const link = document.createElement("a");
     link.download = "defend-your-bullshit-result.png";
-    link.href = $("shareCard").toDataURL("image/png");
+    link.href = window.DYB_SHARE_CARD.combine($("shareCard"),$("shareRecord")).toDataURL("image/png");
     link.click();
   });
 

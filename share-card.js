@@ -37,13 +37,17 @@
     const critique = plan(data.critique, '500 27px Arial,"Microsoft YaHei",sans-serif', 39, inner - 48);
     const defenseFont = data.defense.length > 1200 ? 20 : 22;
     const defense = plan(data.defense, '500 ' + defenseFont + 'px Arial,"Microsoft YaHei",sans-serif', defenseFont + 11, inner - 48);
+    const committee=[...new Set((data.history||[]).map(row=>row.professor).filter(Boolean))];
+    const signatures=committee.map(name=>plan(name,'italic 700 27px "KaiTi","STKaiti",Georgia,cursive',36,(inner-32)/2-24));
+    const signatureRows=[];for(let i=0;i<signatures.length;i+=2)signatureRows.push(Math.max(signatures[i].height,signatures[i+1]?.height||0)+34);
+    const committeeHeight=committee.length?70+signatureRows.reduce((sum,h)=>sum+h,0):0;
     const projectY = 342;
     const rankY = projectY + project.height + 88;
     const scoreY = rankY + rank.height + 128;
     const critiqueY = scoreY + 272;
     const defenseY = critiqueY + critique.height + 108;
     const defenseBottom = defenseY + 62 + defense.height;
-    canvas.height = Math.max(1350, Math.ceil(defenseBottom + 320));
+    canvas.height = Math.max(1350, Math.ceil(defenseBottom + 320 + committeeHeight));
     ctx = canvas.getContext("2d");
     ctx.fillStyle = paper;
     ctx.fillRect(0, 0, width, canvas.height);
@@ -142,8 +146,39 @@
     // Mark only the margin: the full defense stays unobscured.
     pen(()=>{ctx.moveTo(padding+8,defenseY+63);ctx.lineTo(padding-12,defenseY+70);ctx.lineTo(padding-10,defenseBottom+18);ctx.lineTo(padding+9,defenseBottom+25)},2.5);
     note('你敢讲，我就敢存证。',padding+24,defenseBottom+65,-0.045,22);
+    if(committee.length){
+      const top=defenseBottom+106;
+      text('REVIEWED BY / 本局评图席', '700 21px Consolas,monospace',padding,top,red);
+      text('虚构教授 · 模拟签名', '500 17px Arial,sans-serif',padding+inner-220,top,'#81786d');
+      let y=top+48;
+      signatures.forEach((signature,i)=>{const x=padding+(i%2)*(inner+32)/2;ctx.save();ctx.translate(x,y);ctx.rotate(i%2?0.025:-0.025);ctx.font=signature.font;ctx.fillStyle=ink;signature.lines.forEach((line,j)=>ctx.fillText(line,0,j*signature.lineHeight));ctx.restore();ctx.strokeStyle=red;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y+signature.height-18);ctx.lineTo(x+(inner-32)/2-24,y+signature.height-22);ctx.stroke();if(i%2===1)y+=signatureRows[Math.floor(i/2)];});
+    }
     text(data.url,'700 17px Consolas,monospace',padding,canvas.height-54);
     return { width, height:canvas.height, defenseLines:defense.lines, defenseFont, defenseBottom, footerY:canvas.height-54 };
   }
-  window.DYB_SHARE_CARD = { draw, wrap };
+  function drawRecord(canvas,data){
+    const width=1080,padding=96,inner=width-2*padding;canvas.width=width;
+    let ctx=canvas.getContext('2d');const ink='#252420',red='#b83f31';
+    const layout=(text,size=25)=>{ctx.font=size+'px Arial,"Microsoft YaHei",sans-serif';const lines=wrap(ctx,String(text||'（未记录）'),inner-48);return {lines,size,height:lines.length*(size+14)}};
+    const project=layout(data.project,28);
+    const rows=(data.history||[]).map((row,i)=>{
+      const parts=[{label:'评委 / CRITIC',value:row.professor},{label:'评委的问题 / QUESTION',value:row.question},{label:'你的回答 / YOUR DEFENCE',value:row.answer},{label:'评委留下的评语 / CRITIQUE',value:row.response}];
+      if(row.battle)parts.push({label:'限时追问 / BATTLE QUESTION',value:row.battle.question||'（早期记录未保存追问）'},{label:'你的补充回答 / BATTLE DEFENCE',value:row.battle.answer},{label:'追问评语 / BATTLE CRITIQUE',value:row.battle.response});
+      const blocks=parts.map(part=>({...part,...layout(part.value,part.label.includes('CRITIQUE')?27:25)}));
+      return {round:i+1,blocks,height:100+blocks.reduce((sum,b)=>sum+b.height+72,0)};
+    });
+    canvas.height=330+project.height+rows.reduce((sum,r)=>sum+r.height+40,0)+100;ctx=canvas.getContext('2d');ctx.fillStyle='#f1eadf';ctx.fillRect(0,0,width,canvas.height);
+    ctx.strokeStyle='#b8ac99';ctx.strokeRect(48,40,width-96,canvas.height-80);
+    const text=(value,font,x,y,color=ink)=>{ctx.font=font;ctx.fillStyle=color;ctx.fillText(value,x,y)};
+    text('02 / THE DEFENCE TRANSCRIPT','700 23px Consolas,monospace',padding,100,red);
+    text('每一句都有教授听见。','900 48px Arial,sans-serif',padding,180);
+    let y=244;project.lines.forEach(line=>{text(line,'700 28px Arial,sans-serif',padding,y);y+=42});y+=50;
+    const painted=[];
+    rows.forEach(row=>{ctx.fillStyle='#fffaf1';ctx.fillRect(padding,y,inner,row.height);ctx.strokeStyle='#b8ac99';ctx.strokeRect(padding,y,inner,row.height);text('ROUND '+String(row.round).padStart(2,'0'),'900 30px Consolas,monospace',padding+24,y+50,red);let cursor=y+100;
+      row.blocks.forEach(block=>{text(block.label,'700 19px Consolas,monospace',padding+24,cursor,red);cursor+=40;block.lines.forEach(line=>{text(line,block.size+'px Arial,"Microsoft YaHei",sans-serif',padding+24,cursor);painted.push(line);cursor+=block.size+14});cursor+=32});y+=row.height+40;
+    });text(data.url,'700 17px Consolas,monospace',padding,canvas.height-54);
+    return {width,height:canvas.height,rounds:rows.length,painted,footerY:canvas.height-54};
+  }
+  function combine(poster,record){const canvas=document.createElement('canvas');canvas.width=poster.width;canvas.height=poster.height+record.height;const ctx=canvas.getContext('2d');ctx.drawImage(poster,0,0);ctx.drawImage(record,0,poster.height);return canvas}
+  window.DYB_SHARE_CARD = { draw, drawRecord, combine, wrap };
 })();

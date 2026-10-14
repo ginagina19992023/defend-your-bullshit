@@ -362,6 +362,26 @@ class BattleTests(unittest.TestCase):
         self.assertIn('Token 18',self.page.locator('#careerStrip').inner_text())
         expect(self.page.locator('.accept-job').first).to_be_enabled()
 
+    def test_share_transcript_preserves_all_rounds_battle_and_actual_critics(self):
+        result=self.page.evaluate("""() => {
+          const history=[1,2,3].map(i=>({professor:'虚构教授 '+i,question:'第'+i+'题：为什么删墙？',answer:('第'+i+'轮回答：墙消失了，关系没有消失。').repeat(15)+'回答结束'+i,response:'神秘赞许'+i}));
+          history[1].battle={question:'补充问题：谁承担代价？',answer:'补充回答全文',response:'追问评语'};
+          const data={project:'删掉一面墙',verdict:{title:'通关',passed:true},scores:{depth:12,confidence:12,substance:8,discomfort:9},critique:'神秘赞许',defense:'我选择删墙',history,url:'test'};
+          const poster=document.getElementById('shareCard'),record=document.getElementById('shareRecord');
+          const original=poster.getContext('2d').fillText,signatures=[];poster.getContext('2d').fillText=function(t,...args){signatures.push(t);return original.call(this,t,...args)};
+          DYB_SHARE_CARD.draw(poster,data);const layout=DYB_SHARE_CARD.drawRecord(record,data);const long=DYB_SHARE_CARD.combine(poster,record);
+          return {rounds:layout.rounds,content:layout.painted.join(''),signatures,height:long.height,expectedHeight:poster.height+record.height};
+        }""")
+        self.assertEqual(result['rounds'],3)
+        for i in range(1,4):
+            self.assertIn('回答结束'+str(i),result['content'])
+            self.assertIn('第'+str(i)+'题',result['content'])
+            self.assertIn('神秘赞许'+str(i),result['content'])
+            self.assertIn('虚构教授 '+str(i),result['signatures'])
+        self.assertIn('补充问题：谁承担代价？',result['content'])
+        self.assertIn('补充回答全文',result['content'])
+        self.assertEqual(result['height'],result['expectedHeight'])
+
     def test_share_card_keeps_long_multilingual_defense(self):
         layout=self.page.evaluate(r"""() => {
             const defense=('这是完整的现场答辩。 Mixed English words must stay visible. 🐒\n').repeat(55)+'最后一句必须完整显示 END OF DEFENCE';
