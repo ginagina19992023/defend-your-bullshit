@@ -797,7 +797,8 @@ class BattleTests(unittest.TestCase):
         self.assertFalse(any('text.pollinations.ai' in url for url in requests))
         self.assertFalse(any('gen.pollinations.ai' in url for url in requests))
         answer=self.page.locator('#strategyPreview').inner_text()
-        self.assertIn(self.page.locator('#reviewProject').inner_text(),answer)
+        self.assertNotIn(self.page.locator('#reviewProject').inner_text(),answer)
+        self.assertLessEqual(len(answer),220)
         expect(self.page.locator('#submitDefense')).to_be_enabled()
 
     def test_ai_connection_controls_test_new_api_and_report_invalid_authorization(self):
@@ -849,7 +850,8 @@ class BattleTests(unittest.TestCase):
         self.page.locator('.strategy').first.click()
         expect(self.page.locator('#strategyDraftStatus')).to_contain_text('离线回答')
         expect(self.page.locator('#submitDefense')).to_be_enabled()
-        self.assertIn(self.page.input_value('#project'),self.page.locator('#strategyPreview').inner_text())
+        self.assertNotIn(self.page.input_value('#project'),self.page.locator('#strategyPreview').inner_text())
+        self.assertLessEqual(len(self.page.locator('#strategyPreview').inner_text()),220)
 
 
     def test_current_project_remains_visible_while_selecting_and_scrolling(self):

@@ -11,19 +11,19 @@
   function prompt({project,question,strategy,discipline,disciplineId,topic,criticInterest="",previous=[]}){
     const plan=window.DYB_QUESTION_ARGUMENTS?.plan({project,question,topic,disciplineId});
     return ['你正在玩学术嘴替游戏。你扮演替学生作答的人，生成玩家将说出的答辩，而不是教授的评论。',
-      '写中文，4到5句，约150到240字。像真正硬撑的学术嘴替：认真、尖锐、荒谬、有节奏。禁止写成产品说明、温吞建议或散文。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
-      '结构：抓住题目一个具体矛盾→按所选策略把它学术升级→正面回应教授追问并给一个方法或判断→用与这个矛盾相关的冷幽默收尾。正文至少两处有趣的反差，不要只在结尾贴一句笑话。',
+      '写中文，2到3句，60到110字，最多140字。像真正硬撑的学术嘴替：认真、尖锐、荒谬、有节奏。禁止写成产品说明、温吞建议或散文。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
+      '直接回答追问中的关键点，再用一个学术逻辑成立、对象关系错位的荒谬推论。一个具体判断和一处反差足够，不写铺垫、总结、完整研究计划或连续笑话。允许冷面无厘头，句法保持正经学术答辩。禁止写“荒诞推论”“冷幽默”“荒谬的是”等笑点标签，直接正经地说。',
       plan?'本题的幽默只能从这组关系展开：'+plan.case.twist+'。不要照搬其他题目的物体或笑话；反例必须沿用具体失败条件，不能用荒诞口号冒充判据。':'幽默来自题目本身的操作与期待之间的反差，不从别的项目借用物体或笑话。',
       '不要逐字复述整句教授问题；把它要你解释的点落实到回答。避免固定开头“我想讨论的是”、套路句“理论可以把项目抬高”和到处适用的泛泛总结。',
       '学科：'+discipline,'评论和回答只针对本学科对象，不用建筑词汇解释艺术作品或产品。','评委研究兴趣：'+criticInterest,'项目原题：'+project.slice(0,500),'评委当前问题：'+question.slice(0,600),
       plan?'本句问题的实际要求：'+plan.demand:'',plan?'必须在前两句直接回答的点：'+plan.answer:'',plan?'题目特有的论证矛盾：'+plan.case.premise:'',plan?'可用的具体比较与反例：'+plan.test+'；失败条件：'+plan.case.failure:'',plan?'可发展的荒谬重读：'+plan.case.twist:'',
       '选择的策略：'+strategy.name+'。'+strategy.description,'本轮回应路径：'+(strategy.target||''),'风格要求：'+(directions[strategy.style]||directions.balanced),
-      '第一句必须包含项目的这段原文：'+project.slice(0,36),
+      '不要复述项目标题或教授问题，不以“关于这个项目”“我的回答是”“您问的是”开头。直接说判断，项目只需通过具体对象和动作体现。',
       '先抓住项目中的具体动作或物体，再解释它如何回应问题。不要杜撰项目不存在的设备、场地、观众反馈或研究数据。',
       previous.length?'避免重复之前的表达：'+previous.slice(-2).map(s=>s.slice(0,200)).join(' / '):'',
       '只输出玩家的答辩正文。'].filter(Boolean).join('\n');
   }
-  function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=800&&text.includes(project.slice(0,36))&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
+  function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=180&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
   function fallback({project,question,strategy,disciplineId,topic,previous=[]}){
     // These are complete alternative arguments, not random word substitutions.
     const p='「'+project+'」',q='「'+question.slice(0,70)+'」';
