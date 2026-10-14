@@ -49,6 +49,7 @@
       active = null;
       grade = onResolve = null;
       $("battle").hidden = true;
+      $("battleContext").hidden=true;$("defense").classList.remove("battle-active");
       $("professorFace").classList.remove("flinch", "leave");
     }
     function pickTrigger(scores, grading) {
@@ -62,6 +63,11 @@
       stopTimer();
       if (kind === "pressure") pressureTriggered = true;
       active = { kind, professor, project, topic: options.topic || "form", discipline: options.discipline || "architecture", question: (options.previousAnswer ? "你刚才说「" + options.previousAnswer.slice(0,36) + (options.previousAnswer.length>36?"…":"") + "」。\n" : "") + encounters[kind].lead + "\n" + (options.followUp || followUps[options.topic] || options.question || "你最关键的判断是什么？请解释它如何体现在这个项目里，并给一个具体依据。") };
+      active.questionCore=options.followUp||followUps[active.topic]||options.question||active.question;
+      $("battleProjectMini").textContent=project;
+      $("battleQuestionMini").textContent=active.questionCore;
+      $("battleQuestionFull").textContent=active.question;
+      $("battleQuestionMiniPanel").open=false;$("battleAssemblyPanel").open=false;
       vocabulary = Array.isArray(options.vocabulary) ? options.vocabulary : null;
       grade = gradeAnswer;
       onResolve = callback;
@@ -110,11 +116,16 @@
     }
     function collage() { return order.map(key => slots[key]?.text).filter(Boolean).join(" "); }
     function sentence() { const draft=$("battleDraft").value.trim();return $("battleInputMode").value==="free"?draft:[collage(),draft].filter(Boolean).join(" "); }
-    function preview() { $("battleSentence").textContent=sentence()||"拼词、补充文字，或直接回答评委。"; }
+    function preview() {
+      const text=sentence();$("battleSentence").textContent=text||"拼词、补充文字，或直接回答评委。";
+      $("battleAssemblyMini").textContent=text||"点词条，直接拼到这里";
+      $("battleAssemblyFull").textContent=text||"还没选片段。";
+      $("battleAssemblyCount").textContent=$("battleInputMode").value==="free"?"自由回答":"已拼 "+Object.keys(slots).length;
+    }
     function updateSelection() {
       $("wordBank").querySelectorAll("button").forEach((button, i) => {
-        button.classList.toggle("selected", i === selected);
-        button.setAttribute("aria-pressed", String(i === selected));
+        button.classList.toggle("selected", Object.values(slots).includes(tokens[i]));
+        button.setAttribute("aria-pressed", String(Object.values(slots).includes(tokens[i])));
       });
     }
     function compatible(slot, token) { return token.type === slot || (slot === "proof" && token.type === "absurd"); }
@@ -149,13 +160,14 @@
       if (professorLeft) {
         face.textContent = "…";
         face.classList.add("leave");
-        $("improvStatus").textContent = "教授暂时离席倒水。计时继续，委员会把这叫作强烈的空间反应。";
+        $("improvStatus").textContent = "教授暂时离席倒水。计时继续，委员会把这叫作强烈的现场反应。";
       }
       $("chaosMeter").textContent = "CHAOS " + chaos;
     }
     function start() {
       if (phase !== "ready") return;
       phase = "playing";
+      $("battleContext").hidden=false;$("defense").classList.add("battle-active");
       paused = false;
       remaining = duration * 1000;
       deadline = performance.now() + remaining;
@@ -173,9 +185,10 @@
       $("battlePause").disabled = false;
       $("battlePause").textContent = "暂停计时";
       $("battlePause").setAttribute("aria-pressed", "false");
-      $("improvStatus").textContent = "点击词条，再点击槽位；也可以直接拖拽磁条。";
+      $("improvStatus").textContent = "点击词条直接入槽，同类词条会替换；也可以拖拽调整。";
       $("chaosMeter").textContent = "CHAOS 0";
       $("battleSentence").textContent = "你的答辩句子会出现在这里。";
+      preview();
       $("wordBank").replaceChildren();
       tokens.forEach((token, index) => {
         const button = document.createElement("button");
@@ -193,9 +206,7 @@
         });
         button.addEventListener("click", () => {
           if (!canPlay()) return;
-          selected = index;
-          updateSelection();
-          $("improvStatus").textContent = "已拿起「" + token.text + "」，点击一个槽位放下。";
+          place(token.type === "absurd" ? "proof" : token.type,index);
         });
         $("wordBank").append(button);
       });
@@ -221,6 +232,7 @@
     function finish(timedOut) {
       if (phase !== "playing") return;
       phase = "complete";
+      $("battleContext").hidden=true;$("defense").classList.remove("battle-active");
       stopTimer();
       stopVoice();
       $("battleActions").classList.remove("is-live");

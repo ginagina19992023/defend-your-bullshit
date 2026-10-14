@@ -45,7 +45,7 @@
   const scenarios = [
     { id: "stress", name: "连续被 diss，客户快崩溃了", brief: "客户已经被同一组评委否定三次。他一边删稿一边说：要不我别讲了。你接过这次汇报，需要先稳住现场。", goal: "验收需通关且自信分 ≥10", key: "confidence", target: 10, premium: 8, opening: { depth: 1, confidence: 2, substance: 0, discomfort: 4 } },
     { id: "evidence", name: "返场补交：你到底凭什么？", brief: "上次汇报只剩漂亮概念。评委要求针对一个具体决定拿出依据，客户把材料、观察和测试记录交给了你。", goal: "验收需通关且实质分 ≥8", key: "substance", target: 8, premium: 12, opening: { depth: 0, confidence: 0, substance: 0, discomfort: 1 } },
-    { id: "trauma", name: "大师的名字，踩中了评委旧伤", brief: "客户的稿子引用了拼贴大师“勒·柯布哈兹”。这位评委曾在他的评图课被挂过，听见那种语气就会不爽。", goal: "照常验收；提及“大师、导师、柯布、库尔”等词，不适额外 +2", premium: 10, opening: { depth: 0, confidence: 1, substance: 0, discomfort: 3 } },
+    { id: "trauma", name: "大师的名字，踩中了评委旧伤", brief: "客户的稿子引用了一位拼贴大师。这位评委曾在大师的工作坊被否定，听见借名声作答就会不爽。", goal: "照常验收；提及“大师、导师、柯布、库尔”等词，不适额外 +2", premium: 10, opening: { depth: 0, confidence: 1, substance: 0, discomfort: 3 } },
     { id: "regular", name: "普通代汇报", brief: "客户交来一个还没讲明白的项目。替他完成三轮汇报，让委员会相信它值得继续。", goal: "按四项答辩标准验收", premium: 0, opening: { depth: 0, confidence: 0, substance: 0, discomfort: 0 } }
   ];
   const fresh = serial => ({

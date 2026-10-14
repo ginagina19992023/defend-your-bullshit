@@ -58,7 +58,7 @@
     {ask:/这面旧墙|旧照片/,has:/旧|历史|过去|遗产/}
   ];
   function fitsProject(entry,project){return features.every(rule=>!rule.ask.test(entry.text)||rule.has.test(project))}
-  function generate(project,topic,seed,stage,answer){
+  function generate(project,topic,seed,stage,answer,pack="architecture"){
     if(!project.trim())return seed;
     const title='「'+project.slice(0,180)+'」';
     const operations=[[/删|拆|移除|去掉|取消/, '取消这个部分'],[/旋转|转动/, '改变朝向'],[/加|增|放|安置/, '增加这个部分'],[/开.*洞|孔/, '打开这个边界']];
@@ -70,10 +70,28 @@
       evidence:[`你怎么证明${title}中的这个决定有必要？请提出一项可以失败的对照验证。`,`如果测试显示${title}还不如保持原样，你愿意撤回哪一个判断？`,`关于${title}，哪一份具体依据支持你的核心判断，哪一部分仍只是设想？`],
       memory:[`${title}改变之后，原有的经历由谁记得？你保留的是记忆，还是你对记忆的解释？`,`对于${title}，时间过去之后，哪个关系会改变？这如何影响你现在的决定？`,`如果当事人说${title}误解了他们的过去，你会改项目，还是改你的叙述？`]
     };
+    const domainQuestions={
+      art:{
+        form:[`在${title}里，媒介与呈现方式具体承担了什么？换一种呈现，作品的哪一层关系会改变？`,`对于${title}，你是在讨论内容，还是在讨论内容如何被展示？请用一个具体决定区分。`,`如果取消${title}最显眼的呈现手段，观众还会面对什么？你如何判断它仍是一件作品？`],
+        experience:[`观众面对${title}时，具体可以听见、看见或做什么？哪些是你设想的，哪些准备观察？`,`对于${title}，观众拒绝观看或提前离开时，这件作品怎样理解这个反应？`,`同一位观众第二次面对${title}，什么可能改变？请从实际观看条件解释。`],
+        power:[`${title}让谁拥有解释作品的权利？参与者能拒绝被你的阐释代表吗？`,`对于${title}，观众是在参与判断，还是替作者完成意义？这两者怎样区分？`,`如果被呈现的人或材料的提供者反对${title}的展示，你会修改哪一个决定？`],
+        evidence:[`什么观众反馈会让你修改${title}？请说明一次可执行的试展或呈现对照。`,`关于${title}，你如何区分作品产生的反应，和说明文字要求观众产生的反应？`,`你准备拿什么过程材料说明${title}的选择？这些材料能证明什么，又不能证明什么？`],
+        memory:[`当${title}结束展示，留下的是记录、物件还是观看者的解释？你为什么选择保留它？`,`对于${title}，重复、持续和结束怎样改变观看？请解释时间为何是作品的一个条件。`,`如果观众对${title}的记忆与你的意图不同，你会把这视作误读，还是作品的一部分？`]
+      },
+      startup:{
+        form:[`对于${title}，哪个功能是完成核心任务必须的？删掉它之后，用户会失去什么？`,`为什么${title}需要这个流程，而不是更简单的操作？请比较用户实际要完成的任务。`,`如果${title}只有一个最小原型，你必须保留哪个决定？请说明理由。`],
+        experience:[`第一次使用${title}的人，会在哪一步知道它有用？你准备怎样观察？`,`对于${title}，用户不按预设流程操作，你会改变功能，还是重新解释需求？`,`如果用户选择不用${title}，他原本如何完成这件事？你的方案改善了哪一步？`],
+        power:[`${title}让谁节省时间，又让谁承担额外操作或风险？你怎样比较双方的处境？`,`对于${title}，用户可以拒绝规则或退出吗？这会失去哪一项基本能力？`,`谁有权修改${title}的使用规则？被影响的用户能怎样提出反对？`],
+        evidence:[`什么用户行为能支持${title}确实满足需求？你准备怎样做一个可失败的对照？`,`如果测试显示${title}不如用户原来的办法，你会撤回哪个功能或判断？`,`对于${title}，你要怎样区分口头喜欢和实际使用？请给一个可以观察的指标。`],
+        memory:[`对于${title}，如果下一次迭代要改变流程，你准备保留哪些用户已经形成的习惯？`,`如果${title}停止提供服务，用户投入的时间和积累的内容怎样处理？`,`当需求发生变化，${title}的哪个判断最需要重新验证？时间如何改变你的设计？`]
+      }
+    };
+    if(domainQuestions[pack])Object.assign(prompts,domainQuestions[pack]);
     const serial=Number(seed.match(/(\d+)$/)?.[1]||0);
     const index=serial%3;
     const question=(prompts[topic]||prompts.form)[index];
-    const pressure=serial>=6 ? ['如果客户要求明天就实施，','如果另一位使用者当场反对，'][serial%2] : '';
+    const dramatic=pack==='art'?['如果策展人要求明天就展示，','如果一位观众当场反对你的解释，']:pack==='startup'?['如果产品必须明天交给用户，','如果一位用户当场拒绝使用，']:['如果客户要求明天就实施，','如果另一位使用者当场反对，'];
+    const pressure=serial>=6?dramatic[serial%2]:'';
     return (stage==='battle'&&answer ? '你刚才的回答还没有说清一个点。' : pressure)+question;
   }
   function create({storage,random=()=>Math.random()}={}){
@@ -98,7 +116,7 @@
       for(const item of weighted){roll-=item.weight;if(roll<0){chosen=item.entry;break}}
       used.add(chosen.id);usedTopics.push(chosen.topic);recent.push(chosen.id);recent=recent.slice(-60);
       try{storage.setItem('dyb-questions-v1',JSON.stringify(recent))}catch(_){}
-      return {...chosen,text:generate(project,chosen.topic,chosen.id,stage,answer)};
+      return {...chosen,text:generate(project,chosen.topic,chosen.id,stage,answer,pack)};
     }
     return {pick,reset};
   }

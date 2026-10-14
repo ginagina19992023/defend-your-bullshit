@@ -8,10 +8,10 @@
     erase:'明确说删掉或取消项目的哪个部分，解释保留的关系。把撤退讲成方法论，幽默但要有具体对象。',
     balanced:'兼顾一个具体方法和一个概念判断。回答评委的问题，再用一个贴合项目的反差笑点收尾。'
   };
-  function prompt({project,question,strategy,discipline,criticInterest="",previous=[]}){
+  function prompt({project,question,strategy,discipline,disciplineId,criticInterest="",previous=[]}){
     return ['你正在玩学术嘴替游戏。你扮演替学生作答的人，生成玩家将说出的答辩，而不是教授的评论。',
       '写中文，3到5句，约120到220字。聪明、具体、一本正经地好笑。不要堆砌无关联的名词，不使用Markdown或标题，不提真实教授或机构。',
-      '学科：'+discipline,'评委研究兴趣：'+criticInterest,'项目原题：'+project.slice(0,500),'评委当前问题：'+question.slice(0,600),
+      '学科：'+discipline,'评论和回答只针对本学科对象，不用建筑词汇解释艺术作品或产品。','评委研究兴趣：'+criticInterest,'项目原题：'+project.slice(0,500),'评委当前问题：'+question.slice(0,600),
       '选择的策略：'+strategy.name+'。'+strategy.description,'本轮回应路径：'+(strategy.target||''),'风格要求：'+(directions[strategy.style]||directions.balanced),
       '第一句必须包含项目的这段原文：'+project.slice(0,36),
       '先抓住项目中的具体动作或物体，再解释它如何回应问题。不要杜撰项目不存在的设备、场地、观众反馈或研究数据。',
@@ -19,7 +19,7 @@
       '只输出玩家的答辩正文。'].filter(Boolean).join('\n');
   }
   function valid(text,project){return typeof text==='string'&&text.length>=40&&text.length<=800&&text.includes(project.slice(0,36))&&!/<(?:html|script)|<!doctype|unauthorized|api key|payment required/i.test(text)}
-  function fallback({project,question,strategy,previous=[]}){
+  function fallback({project,question,strategy,disciplineId,previous=[]}){
     // These are complete alternative arguments, not random word substitutions.
     const p='「'+project+'」',q='「'+question.slice(0,70)+'」';
     const scripts={
@@ -30,7 +30,8 @@
       erase:[`如果取消${p}里最显眼的那一步，我们反而能看清${q}究竟在问什么。我会比较保留与删除两种情况，观察关系是否仍然存在。删除不是免答题券，也需要证据；我只是希望项目不要为了证明自己存在，先占满所有空间。`, `我想先从${p}里拿掉那个最急于替自己解释的部分。面对${q}，剩下的行动、边界和反馈可能比完整形象更诚实。我们用对照去判断删掉后究竟损失了什么，不能因为东西变少，就声称思想变多。`],
       balanced:[`对${p}，我先回答${q}里的具体判断，再讨论概念。我们可以通过原型观察实际行动，记录差异并比较不同做法，让形式、体验和公众之间的关系有一个可检查的落点。理论可以把项目抬高，但至少要留一条梯子，让证据上得来。`, `我不会让${p}只靠一个漂亮概念通过${q}。先明确我们想改变的实际关系，再用测试、观察和反馈决定下一步。如果概念成立，它应该能承担一个具体反例；否则它只是比项目更擅长汇报。`]
     };
-    const list=scripts[strategy.style]||scripts.balanced;return list.find(text=>!previous.includes(text))||list[previous.length%list.length];
+    const specific=window.DYB_DISCIPLINE_LANGUAGE?.drafts(disciplineId,{project,question,strategy});
+    const list=specific||scripts[strategy.style]||scripts.balanced;return list.find(text=>!previous.includes(text))||list[previous.length%list.length];
   }
   function create({request}={}){
     let sequence=0,controller=null;const seen=new Map();
@@ -42,7 +43,7 @@
         controller=new AbortController();const owned=controller;const signal=owned.signal;const timeout=setTimeout(()=>owned.abort(),12000);
         try{
           text=await request(prompt(context),{signal,provider,model});
-          if(!valid(text,input.project))throw Error('内容未通过项目关联检查');if(previous.includes(text))throw Error('接口返回了重复回答');source='ai';
+          if(!valid(text,input.project)||(window.DYB_DISCIPLINE_LANGUAGE&&!window.DYB_DISCIPLINE_LANGUAGE.valid(text,input.disciplineId)))throw Error('内容未通过项目与学科检查');if(previous.includes(text))throw Error('接口返回了重复回答');source='ai';
         }catch(error){failure=error.name==='AbortError'?'请求超过12秒':(error.message||'网络连接失败');text=''}finally{clearTimeout(timeout)}
       }
       if(id!==sequence)return null;

@@ -9,7 +9,7 @@
       const cut=full.slice(first+1).startsWith('你说「')&&second>=0?second+1:first+1;
       const context=document.createElement('span');context.className='reaction-context';context.textContent=text.slice(0,cut);root.append(context);
       const verdict=document.createElement('span');verdict.className='reaction-verdict';
-      const content=text.slice(cut);const pattern=/(神秘赞许|神秘的赞许|无法反驳|激进反思|不稳定的伦理位置|委员会不安|质疑建筑本身|同情分|概念过载|令人担忧|真的有点意思)/g;
+      const content=text.slice(cut);const pattern=/(神秘赞许|神秘的赞许|无法反驳|激进反思|不稳定的伦理位置|委员会不安|质疑建筑本身|作品与观看的关系|功能存在的必要性|同情分|概念过载|令人担忧|真的有点意思)/g;
       let last=0;for(const match of content.matchAll(pattern)){verdict.append(document.createTextNode(content.slice(last,match.index)));const mark=document.createElement('em');mark.textContent=match[0];verdict.append(mark);last=match.index+match[0].length}verdict.append(document.createTextNode(content.slice(last)));root.append(verdict);
     };
     const stop=()=>{clearInterval(timer);clearTimeout(transition);timer=transition=null};

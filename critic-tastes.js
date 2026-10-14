@@ -9,8 +9,8 @@
     power:{summary:'研究兴趣：规则、权力与公共性',likes:['deflect','balanced'],facets:['power'],warning:'反问却不说明具体权力关系'},
     absence:{summary:'研究兴趣：缺席、删减与未完成',likes:['erase','honest'],facets:['form','memory'],warning:'删除之后仍然拒绝解释'}
   };
-  function profile({bias,topic}){return profiles[bias]||profiles[bias==='nostalgia'?'memory':topic]||profiles.form}
-  const describe=context=>{const p=profile(context);return {...p,rules:'只有回答触及本轮问题、并实际采用偏爱的解释方式才加分。合拍：自信 +1、概念或实质 +1、不适 -1。回避：实质 -1、不适 +2。'};};
+  function profile({bias,topic}){return profiles[bias]||profiles[bias==='nostalgia'?'memory':bias==='erase'?'absence':topic]||profiles.form}
+  const describe=context=>{const p=profile(context);const domain={art:{concept:'作品概念与呈现的关系',experience:'观看、感知与时间',memory:'作品记录、私人记忆与展后延续',evidence:'试展、过程记录与观众反馈',form:'媒介、呈现与观看条件',power:'作者与参与者的解释权',absence:'缺席、撤除与观看'},startup:{concept:'产品概念与实际需求',experience:'用户体验、需求与操作',memory:'迭代、使用习惯与时间',evidence:'用户测试、反馈与指标',form:'功能、流程与必要性',power:'规则、风险与用户权利',absence:'删减功能与替代方案'}}[context.disciplineId];const key=Object.keys(profiles).find(key=>profiles[key]===p);return {...p,summary:domain?'研究兴趣：'+domain[key]:p.summary,rules:'只有回答触及本轮问题、并实际采用偏爱的解释方式才加分。合拍：自信 +1、概念或实质 +1、不适 -1。回避：实质 -1、不适 +2。'};};
   function evaluate({bias,topic,style,analysis:a,answer}){
     const p=profile({bias,topic});const delta={depth:0,confidence:0,substance:0,discomfort:0};
     const inferred=[];

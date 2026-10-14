@@ -82,51 +82,14 @@
     }
   ];
 
-  const absurdReasons = [
-    "教授突然想起自己曾经被 fail 的毕设也探讨了同样的问题，因此给了你一部分同情分。",
-    "委员会误以为你把长椅放到屋顶上是在批判垂直公共性，因此短暂提高了分数。",
-    "一位教授听见了自己喜欢的词，于是决定不追问它是什么意思。",
-    "你的停顿被解释成一种精确的沉默方法。",
-    "有人觉得这个项目看起来很适合被印在展览海报上，所以暂时原谅了它。",
-    "教授把一个明显的漏洞理解为制度性空缺，并要求你保留它。"
-  ];
-
-  const contradictionPool = {
-    tooEmpirical: [
-      "你居然提供了可检验的回答。委员会对此表示不适，因为它让讨论过早接触现实。",
-      "证据是有帮助的，但你需要小心：过多证据会削弱项目保持开放的能力。"
-    ],
-    tooConceptual: [
-      "理论高度充足，但经验基础可疑。委员会决定把这种可疑暂时称为张力。",
-      "你的概念非常丰厚，丰厚到几乎遮住了项目本身。"
-    ],
-    tooHonest: [
-      "你承认自己也不确定。委员会决定将其理解为激进的自我反思。",
-      "这种诚实令人担忧，但也许正是它使项目获得了不稳定的伦理位置。"
-    ],
-    tooAmbitious: [
-      "你试图同时解决形式、公共性、感知和历史。委员会赞赏这种危险的过度野心，并要求你下周缩小范围。",
-      "项目的野心超过了它的结构承载力。奇怪的是，这让它听起来更像研究。"
-    ],
-    eraseDesign: [
-      "你删除了几乎一切。委员会担心你可能真的开始质疑建筑本身，并对此产生神秘赞许。",
-      "当设计消失，论证突然变得清晰。教授们短暂地沉默了。"
-    ],
-    evasive: [
-      "你没有回答问题，但你成功移动了问题的位置。委员会暂时无法证明这是错误的。",
-      "这个回答绕开了核心质疑，却制造了新的核心质疑。评图系统对此非常熟悉。"
-    ],
-    balanced: [
-      "你在证据和概念之间保持了危险的平衡。委员会尚未决定该攻击哪一边。",
-      "回答既没有完全落地，也没有彻底升空。它正处在一个可被继续讨论的位置。"
-    ],
-    weak: [
-      "评图委员会认为你还有大量概念工作需要完成。请把这个问题改写成一个更大的问题。",
-      "目前的回答过于直接，因此缺少足够的学术保护层。"
-    ]
-  };
-
+  function previewDrawing(){
+    const discipline=pack().id,project=$("project").value;
+    $("drawingProjectPicker").hidden=discipline!=="architecture";
+    $("drawingProject").value=discipline==="architecture"&&window.DYB_PROJECT_DRAWINGS.find(project)?project:"";
+    window.DYB_PROJECT_DRAWINGS.render($("setupDrawing"),project,discipline);
+  }
   function show(id) {
+    if(id==="setup")previewDrawing();
     for (const x of ["career", "setup", "statement", "defense", "final", "sessionHistory", "welcome"]) $(x).hidden = x !== id;
     $("helpToggle").hidden = id === "welcome";
     $("optionalDock").hidden = id !== "setup";
@@ -196,25 +159,10 @@
     const b = random(v.filter(x => x !== a));
     const c = random(v.filter(x => x !== a && x !== b));
     const project = state.project;
-    const first = "本项目并不试图简单地" + project + "，而是将这一看似微不足道的操作视作一次关于" + a + "的" + (p.practice || "空间实践") + "。通过改变观看和行动的既定方式，作品试图重新审视主体与环境之间的关系。";
-    const second = "在这一过程中，" + project + "不再仅仅是一项物理动作，而逐渐被转译为一种围绕" + b + "展开的开放系统。材料、时间与参与者的介入共同塑造了作品中不断变化的意义。";
-    const third = "我们特别关注过程而非结果：随着形式被重复、修正和重新感知，原本稳定的空间界线变得难以确定。由此，" + c + "并非附着于形式之上的解释，而成为设计发生的条件。";
-    const final = "最终，真正需要讨论的并非项目是否完成，而是我们为什么仍旧假设空间必须被完成。作品试图将这个无法被轻易解决的问题留给每一个参与者。";
-    // Change the argument itself, rather than swapping a few nouns in one template.
-    const variants = [
-      [first, second, third, final],
-      ["与其把「" + project + "」理解成一个需要被证明有用的方案，我们更愿意将它作为研究「" + a + "」的切入口。它的价值来自问题如何被提出，而非答案如何被包装。",
-       "方法上，我们从参与者的实际行动出发，记录材料、时间与反馈的变化，再用「" + b + "」重新组织这些观察。每一次偏离预期的使用，都可能修正项目的前提。",
-       "因此，「" + c + "」不是最终结论，而是一组可以被比较和检验的假设。我们希望通过小尺度试验，让抽象的立场留下具体的痕迹。",
-       "项目的完成并不意味着讨论终止。它更像一份可继续修改的提案，邀请参与者共同决定下一步。"],
-      ["「" + project + "」看似只是一个简单决定，却暴露了我们对「" + a + "」的默认理解。本项目从这个矛盾开始，尝试让习以为常的秩序重新成为问题。",
-       "我们把「" + b + "」转化为可被体验的情境，而非停留在概念描述。通过调整介入的尺度与顺序，项目让不同参与者对同一件事产生不同判断。",
-       "这里的关键不在于形式是否独特，而在于「" + c + "」如何改变行动的可能性。设计必须允许质疑、误读与重新使用，这些反馈构成它持续发展的依据。",
-       "最终，我们保留的不是一个封闭答案，而是一种讨论机制：让项目在不断被回应的过程中获得新的意义。"]
-    ];
-    state.statementVariant = ((state.statementVariant ?? -1) + 1) % variants.length;
-    state.statement = variants[state.statementVariant].slice(0, intensity + 1).join("\n\n");
+    state.statementVariant=((state.statementVariant??-1)+1)%3;
+    state.statement=window.DYB_DISCIPLINE_LANGUAGE.statement(p.id,project,[a,b,c],state.statementVariant).slice(0,intensity+1).join("\n\n");
     $("statementProject").textContent = state.project;
+    window.DYB_PROJECT_DRAWINGS.render($("statementDrawing"),state.project,pack().id);
     renderStatement([a, b, c]);
     show("statement");
   }
@@ -241,7 +189,7 @@
   }
 
   function countMatches(text, terms) {
-    return terms.reduce((count, term) => count + (text.includes(term) ? 1 : 0), 0);
+    return [...new Set(terms)].reduce((count, term) => count + (text.includes(term) ? 1 : 0), 0);
   }
 
   function analyze(answer, question) {
@@ -275,14 +223,14 @@
     let depth = 1 + Math.min(4, a.inflated) + Math.min(2, a.otherTopicHits) + (eraseDesign ? 2 : 0) + (tooHonest ? 1 : 0) + (pref.depth || 0);
     let confidence = 1 + Math.min(3, a.evasions) + Math.min(2, a.inflated) + (answer.length > 80 ? 1 : 0) + (style === "deflect" ? 1 : 0) + (pref.confidence || 0);
     let substance = (a.onTopic ? 2 : 0) + Math.min(4, a.evidence) + Math.min(2, a.concrete) - (tooConceptual ? 2 : 0) - (evasiveWithoutAnswer ? 1 : 0) + (pref.substance || 0);
-    let discomfort = 1 + Math.min(3, a.evasions) + (tooEmpirical ? 4 : 0) + (tooConceptual ? 3 : 0) + (tooHonest ? 3 : 0) + (tooAmbitious ? 2 : 0) + (eraseDesign ? 4 : 0) - (a.onTopic ? 1 : 0) + (pref.discomfort || 0);
+    let discomfort = window.DYB_REVIEW_OUTCOMES.discomfort(a,{tooEmpirical,tooConceptual,tooHonest,tooAmbitious,eraseDesign},pref);
 
     if (style === "evidence") substance += 1;
     if (style === "jargon") depth += 1;
     if (style === "erase") confidence += 1;
     if (!a.onTopic && a.evidence === 0) substance -= 1;
     const scenario = professional() ? career.snapshot().active?.scenario : null;
-    const oldWound = scenario?.id === "trauma" && /大师|导师|柯布|库尔|密斯|扎哈|安藤/.test(answer);
+    const oldWound = scenario?.id === "trauma" && /大师|导师|柯布|库尔|密斯|扎哈|安藤|沃霍|杜尚|博伊|拉姆|诺曼|艾维|深泽/.test(answer);
     if (oldWound) discomfort += 2;
     const steadied = scenario?.id === "stress" && /理解|先稳|慢慢|一步|先记录|先测试/.test(answer);
     if (steadied) { confidence += 1; discomfort -= 1; }
@@ -291,7 +239,6 @@
     if (lucky) {
       depth += 1;
       confidence += 1;
-      discomfort += 1;
     }
 
     const tags = [];
@@ -313,7 +260,7 @@
     if (a.evasions >= 2) reasons.push("使用了问题反转或概念转移");
     if (tooHonest) reasons.push("诚实程度危险");
     if (eraseDesign) reasons.push("触发删除设计逻辑");
-    if (lucky) reasons.push(random(absurdReasons));
+    if (lucky) reasons.push(random(window.DYB_DISCIPLINE_LANGUAGE.reasons(pack().id,state.project)));
     if (oldWound) reasons.push("大师的名字触发旧评图记忆，不适 +2");
     if (steadied) reasons.push("稳住客户的表达，自信 +1，不适 -1");
 
@@ -322,7 +269,7 @@
       depth: Math.max(0,clamp(depth,0,9)+taste.delta.depth),
       confidence: Math.max(0,clamp(confidence,0,9)+taste.delta.confidence),
       substance: clamp(substance,-2,9)+taste.delta.substance,
-      discomfort: clamp(discomfort,0,10)+taste.delta.discomfort,
+      discomfort: clamp(discomfort,0,6)+taste.delta.discomfort,
       taste,
       tags,
       reason: reasons.map(reason=>reason.replace(/[。；\s]+$/g, "")).join("；") + "。",
@@ -331,7 +278,7 @@
   }
 
   function moodFor(discomfort) {
-    if (discomfort >= 18) return { face: ":-O", label: "theoretically destabilized", note: "委员会已经不确定自己是否仍在评建筑。" };
+    if (discomfort >= 18) return { face: ":-O", label: "theoretically destabilized", note: "委员会已经不确定自己是否仍在评"+window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id).object+"。" };
     if (discomfort >= 14) return { face: ">:|", label: "deeply disturbed", note: "教授开始用沉默表达赞许与敌意。" };
     if (discomfort >= 10) return { face: ":-/", label: "uneasy", note: "讨论正在偏离现实，效果不错。" };
     if (discomfort >= 5) return { face: ":-?", label: "skeptical", note: "委员会怀疑你可能真的有一点想法。" };
@@ -347,7 +294,7 @@
     $("moodNote").textContent = mood.note;
     $("reviewProject").textContent=state.project;
     $("reviewProfessor").textContent=state.professor?.name||"评委";
-    const taste=window.DYB_CRITIC_TASTES.describe({bias:state.professor?.bias,topic:state.question?.topic});
+    const taste=window.DYB_CRITIC_TASTES.describe({bias:state.professor?.bias,topic:state.question?.topic,disciplineId:pack().id});
     const focus=pack().topics.find(t=>t.id===state.question?.topic)?.label||"具体论证";
     $("reviewBias").textContent=taste.summary;
     $("reviewFocus").textContent="本轮关注："+focus;
@@ -387,6 +334,7 @@
   }
 
   function critique() {
+    for(const id of ["reviewDrawing","battleDrawing"])window.DYB_PROJECT_DRAWINGS.render($(id),state.project,pack().id);
     const scheduled = state.panel[state.round];
     const event = critics.replace(state.round, state.scores, scheduled, state.criticPool);
     state.professor = event ? event.incoming : scheduled;
@@ -401,7 +349,7 @@
       if (scenario.id === "evidence") {
         state.professor = { ...state.professor, bias: "evidence", biasLabel: "BIAS: 先给依据，再谈概念", question: "上次你没有解释依据。这次请用具体材料回应：" + state.professor.question, topic: "evidence", preference: { ...state.professor.preference, substance: 2 } };
       } else if (scenario.id === "trauma") {
-        state.professor = { ...state.professor, bias: "memory", biasLabel: "BIAS: 对拼贴大师的名字有旧伤", question: "不要再借勒·柯布哈兹的名字。请用你自己的判断回答：" + state.professor.question, topic: "memory", preference: { ...state.professor.preference, discomfort: 1 } };
+        state.professor = { ...state.professor, bias: "memory", biasLabel: "BIAS: 对拼贴大师的名字有旧伤", question: "不要再借大师的名字。请用这个项目的具体选择回答：" + state.professor.question, topic: "memory", preference: { ...state.professor.preference, discomfort: 1 } };
       } else if (scenario.id === "stress") {
         state.professor = { ...state.professor, question: "你的客户前几次都没讲清楚。你来接手，就能改变什么？ " + state.professor.question };
       }
@@ -457,7 +405,8 @@
 
   function aiPrompt(answer, grading) {
     return [
-      "你是一个虚构建筑评图教授，写中文。不要提真实机构或真实教授姓名。",
+      "你是一个虚构的"+window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id).name+"教授，写中文。不要提真实机构或真实教授姓名。",
+      "本学科："+pack().name+"。评论对象是"+window.DYB_DISCIPLINE_LANGUAGE.profile(pack().id).object+"，不要使用其他学科的项目设定或比喻。",
       "请根据玩家答辩给出一段不超过90字的讽刺反馈。",
       "语气：荒谬、聪明、像critic，但不要人身攻击。",
       "教授偏好：" + state.professor.biasLabel,
@@ -500,7 +449,7 @@
     const prompt = aiPrompt(answer, grading);
     try {
       const result = provider === "ollama" ? await fetchOllama(prompt) : await fetchPollinations(prompt);
-      return answer.length >= 6 && result.length <= 400 && result.includes(answer.slice(0,16)) && !/<html|<!doctype|unauthorized|api key/i.test(result) ? result : "";
+      return answer.length >= 6 && result.length <= 400 && result.includes(answer.slice(0,16)) && window.DYB_DISCIPLINE_LANGUAGE.valid(result,pack().id) && !/<html|<!doctype|unauthorized|api key/i.test(result) ? result : "";
     } catch (error) {
       console.warn("AI feedback failed, falling back to local rules:", error);
       return "";
@@ -525,7 +474,7 @@
     $("submitDefense").textContent = "PROFESSOR IS THINKING...";
     const mainTag = grading.tags[0];
     const excerpt=answer.split(/[。！？\n]/).find(Boolean)||answer;
-    const localResponse = "你说「" + excerpt.slice(0,42) + (excerpt.length>42?"…":"") + "」。\n" + random(contradictionPool[mainTag]);
+    const localResponse = "你说「" + excerpt.slice(0,42) + (excerpt.length>42?"…":"") + "」。\n" + window.DYB_DISCIPLINE_LANGUAGE.feedback(pack().id,mainTag,Math.floor(Math.random()*2),state.project);
     const trigger = battle.pickTrigger(state.scores, grading);
     const aiResponse = trigger ? "" : await optionalAiFeedback(answer, grading);
     const response = [aiResponse||localResponse,grading.taste.reason].filter(Boolean).join("\n\n");
@@ -578,21 +527,7 @@
   }
 
   function verdict() {
-    const s = state.scores;
-    const pass = s.depth >= 8 && s.confidence >= 8 && s.substance >= 4 && s.discomfort >= 4 && s.discomfort <= 15;
-    if (s.discomfort > 15) {
-      return { passed: false, stamp: "PANEL DESTABILIZED", title: "TOO SUCCESSFULLY DISTURBING", text: "你让委员会过度不适。项目被认为具有潜力，但需要在现实世界造成更少的理论震荡。" };
-    }
-    if (pass) {
-      return { passed: true, stamp: "PASSED WITH CONDITIONS", title: "CERTIFIED BULLSHIT DEFENDER", text: "你成功让「" + state.project + "」显得既有概念、又有一点证据、同时仍然足够令人不安。委员会建议继续修改，但这已经是胜利。" };
-    }
-    if (s.substance < 4 && s.depth + s.confidence >= 18) {
-      return { passed: false, stamp: "THEORY WITHOUT FLOOR", title: "MASTER OF STRATEGIC AMBIGUITY", text: "你的语言非常强，项目却还没有足够落地。下次加一点观察、测试或材料证据，哪怕只是象征性地加。" };
-    }
-    if (s.depth < 8 || s.confidence < 8) {
-      return { passed: false, stamp: "INSUFFICIENTLY INEVITABLE", title: "UNRESOLVED SPATIAL PROPOSITION", text: "项目还没有显得非做不可。请提高概念密度，或者把教授的问题改写成更宏大的问题。" };
-    }
-    return { passed: false, stamp: "OFFICIALLY UNRESOLVED", title: "PROMISING BUT SUSPICIOUS", text: "你差一点通过。委员会感到困惑，但不够困惑。真正的通关秘诀是：一点证据，一点黑话，一点危险的不适。" };
+    return window.DYB_REVIEW_OUTCOMES.verdict(state.scores,state.project,pack().id);
   }
 
   function finish() {
@@ -675,8 +610,7 @@
     if(!response.ok)throw Error("接口返回 HTTP "+response.status);return (await response.text()).trim();
   }});
   function strategyTarget(strategy){
-    const labels={experience:"身体体验",form:"形式决定",power:"公共权力",evidence:"证据缺口",memory:"记忆与时间"};
-    const topic=labels[state.question.topic]||"当前判断";
+    const topic=pack().topics.find(item=>item.id===state.question.topic)?.label||"当前判断";
     const goals={jargon:"从感知解释",deflect:"反问评判规则：",evidence:"给出验证方法：",honest:"承认具体限制：",erase:"比较删除之后：",balanced:"具体理由 + 方法："};
     return (goals[strategy.style]||goals.balanced)+topic;
   }
@@ -692,7 +626,7 @@
     $("strategyDraftStatus").textContent=$("strategyMode").value==="ai"?"AI 正在现编 · "+strategy.target+"。":"离线话术编写中。";
     $("submitDefense").disabled=true;$("submitDefense").textContent="话术正在生成…";
     $("reviewPresenceText").textContent="你准备采用「"+strategy.name+"」。评委正等你把理由说清楚。";
-    const result=await writer.generate({project:state.project,question:state.question.text,strategy,discipline:pack().name,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
+    const result=await writer.generate({project:state.project,question:state.question.text,strategy,discipline:pack().name,disciplineId:pack().id,criticInterest:window.DYB_CRITIC_TASTES.describe({bias:state.professor.bias,topic:state.question.topic,disciplineId:pack().id}).summary},{mode:$("strategyMode").value,provider:$("aiProvider").value,model:$("ollamaModel").value});
     if(!result||version!==strategyVersion)return;
     state.strategyDraft=result;$("strategyPreview").textContent=result.text;
     $("strategyDraftStatus").textContent=result.source==="ai"?"AI 现编 · 可以重编或修改，提交这段文字参与评分。":result.unavailable?"AI 暂时未返回有效新话术，已切换为离线回答。原因："+(result.failure||"未获得有效内容")+"。":"离线回答 · 可重编或自行修改。";
@@ -753,6 +687,7 @@
 
   $("random").addEventListener("click", () => {
     $("project").value = random(pack().projects);
+    previewDrawing();
   });
   $("generate").addEventListener("click", () => {
     if (professional() && (!career.snapshot().active || career.snapshot().closed)) return;
@@ -798,6 +733,9 @@
     link.click();
   });
 
+  window.DYB_PROJECT_DRAWINGS.items.forEach(item=>{const option=document.createElement("option");option.value=item.project;option.textContent=item.project;$("drawingProject").append(option)});
+  $("drawingProject").addEventListener("change",()=>{if(!$("drawingProject").value)return;$("project").value=$("drawingProject").value;career.setProject($("project").value);previewDrawing()});
+  $("project").addEventListener("input",previewDrawing);
   addSelects();
   $("random").click();
   function syncMode() {

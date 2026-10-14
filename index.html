@@ -10,7 +10,7 @@
   <meta property="og:image" content="https://ginagina19992023.github.io/defend-your-bullshit/assets/review-wall-cover.png">
   <meta property="og:type" content="website">
   <title>DEFEND YOUR BULLSHIT</title>
-  <link rel="stylesheet" href="./style.css?v=critic-events-20261014">
+  <link rel="stylesheet" href="./style.css?v=rules-collage-20261014">
 </head>
 <body>
   <main class="paper">
@@ -143,7 +143,9 @@
           </div>
 
           <label for="project">03 / YOUR ACTUAL PROJECT</label>
+          <div id="drawingProjectPicker"><label for="drawingProject">带图纸的荒谬题目 / REVIEW DRAWINGS</label><select id="drawingProject"><option value="">选择一张图纸，或自己写题目</option></select></div>
           <textarea id="project" placeholder="例如：把三块石头堆起来"></textarea>
+          <figure id="setupDrawing" class="project-drawing" hidden></figure>
           <div class="actions compact">
             <button id="random" class="outline" type="button">随机抽一个项目</button>
             <button id="generate" type="button">GENERATE STATEMENT</button>
@@ -154,6 +156,7 @@
     </section>
 
     <section id="statement" class="screen" hidden>
+      <figure id="statementDrawing" class="project-drawing" hidden></figure>
       <p class="eyebrow">THE CONCEPTUAL STATEMENT / 001</p>
       <div class="statement-project"><p class="eyebrow">本局题目 / YOUR PROJECT</p><h2 id="statementProject"></h2></div><h2>你的上台话术，准备好了。</h2><p class="sub speech-hint">红色是你的概念牌。先抓住它，再把项目讲下去。</p>
       <article class="letter" id="generated"></article>
@@ -165,6 +168,7 @@
     </section>
 
     <section id="defense" class="screen" hidden>
+      <figure id="reviewDrawing" class="project-drawing" hidden></figure>
       <div id="seatEvent" class="seat-event" hidden role="status" aria-live="polite">
         <strong id="seatEventTitle"></strong>
         <p id="seatEventText"></p>
@@ -208,10 +212,16 @@
       </div>
 
       <section id="battle" class="battle" hidden aria-labelledby="battleTitle">
+        <div id="battleContext" class="battle-context" hidden>
+          <div class="battle-project-mini"><span>本局题目</span><strong id="battleProjectMini"></strong></div>
+          <details id="battleQuestionMiniPanel" class="battle-mini-panel"><summary><span>追问</span><span id="battleQuestionMini" class="battle-mini-text"></span></summary><p id="battleQuestionFull"></p></details>
+          <details id="battleAssemblyPanel" class="battle-mini-panel assembly-panel"><summary><span id="battleAssemblyCount">已拼 0</span><span id="battleAssemblyMini" class="battle-mini-text" aria-live="polite">点词条，直接拼到这里</span><small>展开</small></summary><p id="battleAssemblyFull"></p></details>
+        </div>
         <div class="battle-head">
           <span class="battle-kicker">REALITY BATTLE / 评图现场突发事件</span>
           <strong>LIVE WORD COLLAGE</strong>
         </div>
+        <figure id="battleDrawing" class="project-drawing compact-drawing" hidden></figure>
         <h2 id="battleTitle" tabindex="-1">现实 Battle</h2>
         <p id="battleReason"></p>
         <blockquote id="battleQuestion"></blockquote>
@@ -294,19 +304,22 @@
     <div class="crumb">?</div>
   </main>
   <dialog id="reactionDialog" class="reaction-dialog" aria-labelledby="reactionName"><p class="eyebrow">THE PANEL REACTS / 评委反应</p><h2 id="reactionName"></h2><div id="reactionFace" aria-hidden="true">:-|</div><p id="reactionText" aria-hidden="true"></p><p id="reactionAccessible" class="visually-hidden"></p><button id="reactionContinue" type="button">知道了 / 继续</button></dialog>
-  <script src="./normal-voice.js?v=critic-events-20261014"></script>
-  <script src="./critic-tastes.js?v=critic-events-20261014"></script>
-  <script src="./strategy-writer.js?v=critic-events-20261014"></script>
-  <script src="./questions.js?v=critic-events-20261014"></script><script src="./reaction.js?v=critic-events-20261014"></script>
-  <script src="./packs.js?v=critic-events-20261014"></script>
-  <script src="./battle-words.js?v=critic-events-20261014"></script>
-  <script src="./battle.js?v=critic-events-20261014"></script>
-  <script src="./critics.js?v=critic-events-20261014"></script>
-  <script src="./share-card.js?v=critic-events-20261014"></script>
-  <script src="./career.js?v=critic-events-20261014"></script>
-  <script src="./career-ui.js?v=critic-events-20261014"></script>
-  <script src="./play-session.js?v=critic-events-20261014"></script>
-  <script src="./game.js?v=critic-events-20261014"></script>
+  <script src="./normal-voice.js?v=rules-collage-20261014"></script>
+  <script src="./critic-tastes.js?v=rules-collage-20261014"></script>
+  <script src="./discipline-language.js?v=rules-collage-20261014"></script>
+  <script src="./strategy-writer.js?v=rules-collage-20261014"></script>
+  <script src="./questions.js?v=rules-collage-20261014"></script><script src="./reaction.js?v=rules-collage-20261014"></script>
+  <script src="./packs.js?v=rules-collage-20261014"></script>
+  <script src="./battle-words.js?v=rules-collage-20261014"></script>
+  <script src="./battle.js?v=rules-collage-20261014"></script>
+  <script src="./critics.js?v=rules-collage-20261014"></script>
+  <script src="./share-card.js?v=rules-collage-20261014"></script>
+  <script src="./career.js?v=rules-collage-20261014"></script>
+  <script src="./career-ui.js?v=rules-collage-20261014"></script>
+  <script src="./play-session.js?v=rules-collage-20261014"></script>
+  <script src="./project-drawings.js?v=rules-collage-20261014"></script>
+  <script src="./review-outcomes.js?v=rules-collage-20261014"></script>
+  <script src="./game.js?v=rules-collage-20261014"></script>
 </body>
 </html>
 
