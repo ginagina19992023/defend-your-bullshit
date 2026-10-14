@@ -13,14 +13,15 @@
   function prompt(input){const c=context(input);return[
     '为学术嘴替游戏写开场概念陈述，不是教授点评，不是回应某个问题。中文四段，每段一至两句，总计180至260字，不写标题或Markdown。',
     '唯一核心：从项目最荒谬的微小细节出发，说明它具体改变什么，再把这一变化赋予过分重大的学术意义。用连续因果链一本正经地过度阐释，不编笑话。',
-    '第一段抓住具体数字、材料、动作或限制；第二段扩大它改变的关系；第三段推向学科的重要概念；第四段落在这个细节引发的学术追问。四段必须围绕同一个细节，不东拼西凑术语。',
+    '第一段抓住题目已经给出的具体数字、材料、动作或限制；没有数字就从动作或限制出发，绝对不能编造数值、承诺指标、说明书页码或产品功能；第二段扩大它改变的关系；第三段推向学科的重要概念；第四段落在这个细节引发的学术追问。四段必须围绕同一个细节，不东拼西凑术语。',
     '不复述项目标题，不随机插入术语，不强制介绍测试计划。不写段子、拟人、包袱、金句、抖机灵和反转收尾。不把物体写成办护照、入职、签收。',
     '学科：'+input.disciplineId,'当前项目：'+input.project,
+    input.disciplineId==='startup'?'产品包的玩家站在荒谬产品的辩护立场：抓住产品想维持的利益，与用户真正想完成的事情之间的冲突。不要默认检讨缺陷或许诺以后测试；把这个利益冲突重新论证为产品成立的条件。未经验证的提效工具重点是为何阻止用户验证，不是如何尽快验证。其他题目沿自身矛盾，不能全部套阻止验证。':'',
     '实际操作：'+c.premise,'具体体验：'+c.experience,'本题的意义放大路径：'+c.magnification,'过程与时间：'+c.time,
     '这些是本题素材，不逐字拼接，重写为流畅的论证。不要借用其他项目的数字或物体，不伪造研究结果。只放大学术意义，不改写物理事实：三厘米仍可以跨越，不能称为不可逾越；题目没有的中心场地、施工材料、设备和既有测试不得补造。',
     '自定义题目没有匹配案例时，从题目本身寻找独特的细节，不只说“这个介入”，不得捏造项目设定。',
     '本次版本：'+input.variant+'，换一个起笔角度，保持论证核心。只输出四段正文，用空行分隔。'].join('\n')}
-  function valid(text,input){if(typeof text!=='string'||text.length<100||text.length>450||/<html|<!doctype|api key|gsk_/i.test(text))return false;return window.DYB_CRITIC_FEEDBACK.valid(text.slice(0,160),{project:input.project,answer:context(input).premise,disciplineId:input.disciplineId},window.DYB_DISCIPLINE_LANGUAGE)&&window.DYB_DISCIPLINE_LANGUAGE.valid(text,input.disciplineId)}
+  function valid(text,input){const numbers=String(text).match(/\d+(?:\.\d+)?/g)||[];const source=input.project+' '+JSON.stringify(context(input));if(numbers.some(n=>!source.includes(n)))return false;if(typeof text!=='string'||text.length<100||text.length>450||/<html|<!doctype|api key|gsk_/i.test(text))return false;return window.DYB_CRITIC_FEEDBACK.valid(text.slice(0,160),{project:input.project,answer:context(input).premise,disciplineId:input.disciplineId},window.DYB_DISCIPLINE_LANGUAGE)&&window.DYB_DISCIPLINE_LANGUAGE.valid(text,input.disciplineId)}
   function create({request}){let sequence=0,controller;return{cancel(){sequence++;controller?.abort()},async generate(input,{mode='ai'}={}){const id=++sequence;controller?.abort();controller=new AbortController();const owned=controller;let paragraphs=fallback(input),source='local';if(mode==='ai'){const timer=setTimeout(()=>owned.abort(),25000);try{const text=await request(prompt(input),{signal:owned.signal});if(valid(text,input)){paragraphs=text.trim().split(/\n\s*\n/);if(paragraphs.length===4)source='ai';else paragraphs=fallback(input)}}catch{}finally{clearTimeout(timer)}}return id===sequence?{paragraphs,source}:null}}}
   window.DYB_STATEMENT_WRITER={fallback,prompt,valid,create};
 })();
